@@ -1,0 +1,132 @@
+---
+# title: "Tables and figure for report Objective 2"
+# author: "`r immdis_name`"
+# date: "`r format(Sys.Date(), '%d %B %Y')`"
+output:
+  word_document:
+    toc: false
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+
+
+```
+# Section 10.`r j`. `r immdis_name`
+
+# Section 10.`r j`.1. Principal analysis `r immdis_name`
+
+### Table `r table_01_name`. `r table_01_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Create a gt table
+gt_table <- gt::gt(data = table_01_content) 
+# %>%
+#   tab_header(
+#     title = "Summary of Exclusion Criteria for Datasource TEST"
+#   )
+
+# Render the gt table in the Rmd document
+gt_table
+```
+
+### Table `r table_02_name`. `r table_02_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Create a gt table
+gt_table <- gt::gt(data = table_02_content) 
+# %>%
+#   tab_header(
+#     title = "Summary of Exclusion Criteria for Datasource TEST"
+#   )
+
+# Render the gt table in the Rmd document
+gt_table
+```
+
+### Table `r table_03_name`. `r table_03_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Create a gt table
+gt_table <- gt::gt(data = table_03_content) 
+
+# Render the gt table in the Rmd document
+gt_table
+```
+
+### Table `r table_04_name`. `r table_04_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Create a gt table
+gt_table <- gt::gt(data = table_04_content) 
+
+# Render the gt table in the Rmd document
+gt_table
+```
+
+### Table `r table_05_name`. `r table_05_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Create a gt table
+gt_table <- gt::gt(data = table_05_content) 
+# %>%
+#   tab_header(
+#     title = "Summary of Exclusion Criteria for Datasource TEST"
+#   )
+
+# Render the gt table in the Rmd document
+gt_table
+```
+
+
+# Section 10.`r j`.2. Other analysis `r immdis_name`
+
+### Table `r table_06_name`. `r table_06_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Create a gt table
+gt_table <- gt::gt(data = table_06_content) 
+
+# Render the gt table in the Rmd document
+gt_table
+```
+
+### Figure `r fig_01_name`. `r fig_01_caption`
+
+```{r, echo=FALSE, out.width='80%', fig.cap=''}
+knitr::include_graphics(fig_01_filename)
+```
+
+
+### Table `r table_07_name`. `r table_07_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# # Create a gt table
+# gt_table <- gt::gt(data = table_07_content) 
+# 
+# # Render the gt table in the Rmd document
+# gt_table
+```
+
+### Table `r table_08_name`. `r table_08_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# # Create a gt table
+# gt_table <- gt::gt(data = table_08_content) 
+# 
+# # Render the gt table in the Rmd document
+# gt_table
+```
+
+### Table `r table_09_name`. `r table_09_caption`
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Create a gt table
+gt_table <- gt::gt(data = table_09_content)
+
+# Render the gt table in the Rmd document
+gt_table
+```
+
+
+
