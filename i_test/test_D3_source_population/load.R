@@ -13,14 +13,13 @@ library(lubridate)
 
 # list of datasets
 
-listdatasets <- c("D3_dispensings_DOACs","D3_clean_spells")
+listdatasets <- c("D3_bleeding_events","D3_source_population")
 
 # dates variables 
 
 listdates <- list()
-listdates[["D3_dispensings_DOACs"]] <- c("date")
-
-listdates[["D3_clean_spells"]] <- c("entry_spell_category","exit_spell_category")
+listdates[["D3_bleeding_events"]] <- "date"
+listdates[["D3_source_population"]] <- c("birthdate", "entry_cohort","exit_cohort")
 
 # date baseline
 

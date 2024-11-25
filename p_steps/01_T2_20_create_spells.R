@@ -1,17 +1,17 @@
 #start from the table ANAFULL containing many records per subject and compute the spells (continuous periods in which the subject was resident in Tuscany with at most 21 days of distance )
 
-ANAFULL <- as.data.table(read_dta(paste0(dirinput,"/ANAFULL.dta")))
+ana <- fread()
 
 
 output_spells_category <- CreateSpells(
-  dataset=ANAFULL,
-  id="IDUNI" ,
+  dataset = ana,
+  id = "ID" ,
   start_date = "INI_RECORD",
   end_date = "FINE",
-  gap_allowed=21
+  gap_allowed = 365
 )
 
-rm(ANAFULL)
+rm(ana)
 
 output_spells_category<-output_spells_category[study_start %between% list(entry_spell_category,exit_spell_category ),]
 
