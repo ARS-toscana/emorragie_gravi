@@ -44,7 +44,7 @@ processing  <- CountPersonTime(
   Age_bands = Agebands_countpersontime,
   Increment = "month",
   Outcomes_nrec = c("bleeding_narrow","bleeding_broad"),
-  # Rec_period = 1,
+  Rec_period = 30,
   Unit_of_age = "year",
   include_remaning_ages = T,
   Aggregate = T

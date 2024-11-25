@@ -13,13 +13,14 @@ library(lubridate)
 
 # list of datasets
 
-listdatasets <- c("D3_bleeding_events","D3_source_population")
+listdatasets <- c("D4_persons_with_MoI","D3_bleeding_events","D3_episodes_of_treatment","D3_PERSONS")
 
 # dates variables 
 
 listdates <- list()
 listdates[["D3_bleeding_events"]] <- "date"
-listdates[["D3_source_population"]] <- c("birthdate", "entry_cohort","exit_cohort")
+listdates[["D3_PERSONS"]] <- c("birth_date","death_date")
+listdates[["D3_episodes_of_treatment"]] <- c("start_date", "end_date")
 
 # date baseline
 

@@ -42,3 +42,7 @@ Agebands_large = c(0, 18, 60)
 Agebands_large_labels = c("0-17","18-59","60+")
 names(Agebands_large) <- Agebands_large_labels
 
+# duration of apixaban and rivaroxaban
+
+duration_MoI <- as.data.table(readxl::read_excel(file.path(thisdir,"p_parameters","archive_parameters","duration_MoI.xlsx")))
+
