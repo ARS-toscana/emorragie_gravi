@@ -1,34 +1,55 @@
 # #set directory with input data
 
 dirinput <- paste0(thisdir,"/i_input/")
+dirinput <- "P:/osservatori/epidemiologia/FARMACOEPI/OTGC/emorraggie_gravi/CDM_instances/241125/"
 dirtest <- file.path(thisdir,"i_test")
 dircodelist <- file.path(thisdir,"p_parameters","archive_parameters")
 
 batch_size_countprevalence <- 20000000
+# 
+# set_and_create_dir <- function(x) {
+#   x <- paste0(thisdir, x)
+#   dir.create(file.path(x), showWarnings = F)
+#   return(x)
+# }
+
+# # set other directories
+# diroutput <- set_and_create_dir("/g_output/")
+# dirtemp <- set_and_create_dir("/g_intermediate/")
+# dirconceptsets <- set_and_create_dir("/g_intermediate/conceptset_datasets/")
+# # diritemsets <- set_and_create_dir("/g_intermediate/itemset_datasets/")
+# # dirpromptsets <- set_and_create_dir("/g_intermediate/promptset_datasets/")
+# direxp <- set_and_create_dir("/g_export/")
+# dirD6 <- set_and_create_dir("/g_export/Formatted tables/")
+# dirfig <- set_and_create_dir("/g_export/Figures/")
+# dirmacro <- set_and_create_dir("/p_macro/")
+# dirpargen <- set_and_create_dir("/g_parameters/")
+# # direvents <- set_and_create_dir("/g_intermediate/events/")
+# # dircomponents <- set_and_create_dir("/g_intermediate/components/")
+# # dirTD <- set_and_create_dir("/g_intermediate/TD/")
 
 set_and_create_dir <- function(x) {
-  x <- paste0(thisdir, x)
+  # x <- paste0(thisdir, x)
   dir.create(file.path(x), showWarnings = F)
   return(x)
 }
 
-# set other directories
-diroutput <- set_and_create_dir("/g_output/")
-dirtemp <- set_and_create_dir("/g_intermediate/")
-dirconceptsets <- set_and_create_dir("/g_intermediate/conceptset_datasets/")
+diroutput <- set_and_create_dir(paste0(dirinput,"/g_output/"))
+dirtemp <- set_and_create_dir(paste0(dirinput,"/g_intermediate/"))
+dirconceptsets <- set_and_create_dir(paste0(dirinput,"/g_intermediate/conceptset_datasets/"))
 # diritemsets <- set_and_create_dir("/g_intermediate/itemset_datasets/")
 # dirpromptsets <- set_and_create_dir("/g_intermediate/promptset_datasets/")
-direxp <- set_and_create_dir("/g_export/")
-dirD6 <- set_and_create_dir("/g_export/Formatted tables/")
+direxp <- set_and_create_dir(paste0(dirinput,"/g_export/"))
+dirD6 <- set_and_create_dir(paste0(dirinput,"/g_export/Formatted tables/"))
 dirfig <- set_and_create_dir("/g_export/Figures/")
-dirmacro <- set_and_create_dir("/p_macro/")
-dirpargen <- set_and_create_dir("/g_parameters/")
+dirmacro <- paste0(thisdir,"/p_macro/")
+dirpargen <- set_and_create_dir(paste0(dirinput,"/g_parameters/"))
 # direvents <- set_and_create_dir("/g_intermediate/events/")
 # dircomponents <- set_and_create_dir("/g_intermediate/components/")
 # dirTD <- set_and_create_dir("/g_intermediate/TD/")
 
-rm(set_and_create_dir)
 
+rm(set_and_create_dir)
 
 # load packages
 read_library <- function(...) {
@@ -68,14 +89,14 @@ source(paste0(dirmacro, "CreateFigureComponentStrategy_v4.R"))
 
 #other parameters
 
-
-#---------------------------------------
-# understand which datasource the script is querying
-
-CDM_SOURCE<- fread(paste0(dirinput,"CDM_SOURCE.csv"))
-
-thisdatasource <- as.character(CDM_SOURCE[1,3])
-
+# 
+# #---------------------------------------
+# # understand which datasource the script is querying
+# 
+# CDM_SOURCE<- fread(paste0(dirinput,"CDM_SOURCE.csv"))
+# 
+# thisdatasource <- as.character(CDM_SOURCE[1,3])
+# 
 
 
 ### TESTING parameters
@@ -86,57 +107,57 @@ list_of_all_datasets <- c()
 # folder for generation of each dataset
 folders_to_be_tested <- c("")
 
-###################################################################
-# CREATE EMPTY FILES
-###################################################################
-
-files <- sub('\\.csv$', '', list.files(dirinput))
-
-if (!any(str_detect(files,"^SURVEY_ID"))) {
-  print("Creating empty SURVEY_ID since none were found")
-  fwrite(data.table(person_id = character(0), survey_id = character(0), survey_date = character(0),
-                    survey_meaning = character(0)),
-         paste0(dirinput, "SURVEY_ID", ".csv"))
-}
-
-if (!any(str_detect(files,"^SURVEY_OBSERVATIONS"))) {
-  print("Creating empty SURVEY_OBSERVATIONS since none were found")
-  fwrite(data.table(person_id = character(0), so_date = character(0), so_source_table = character(0),
-                    so_source_column = character(0), so_source_value = character(0), so_unit = character(0),
-                    survey_id = character(0)),
-         paste0(dirinput, "SURVEY_OBSERVATIONS", ".csv"))
-}
-
-if (!any(str_detect(files,"^MEDICINES"))) {
-  print("Creating empty MEDICINES since none were found")
-  fwrite(data.table(person_id = character(0), medicinal_product_id = integer(0),
-                    medicinal_product_atc_code = character(0), date_dispensing = integer(0),
-                    date_prescription = logical(0), disp_number_medicinal_product = numeric(0),
-                    presc_quantity_per_day = logical(0), presc_quantity_unit = logical(0),
-                    presc_duration_days = logical(0), product_lot_number = logical(0),
-                    indication_code = logical(0), indication_code_vocabulary = logical(0),
-                    meaning_of_drug_record = character(0), origin_of_drug_record = character(0),
-                    prescriber_speciality = logical(0), prescriber_speciality_vocabulary = logical(0),
-                    visit_occurrence_id = character(0)),
-         paste0(dirinput, "MEDICINES_FED", ".csv"))
-}
-
-rm(files)
-
-#############################################
-#SAVE METADATA TO direxp
-#############################################
-
-file.copy(paste0(dirinput,'/METADATA.csv'), direxp, overwrite = T)
-file.copy(paste0(dirinput,'/CDM_SOURCE.csv'), direxp, overwrite = T)
-file.copy(paste0(dirinput,'/INSTANCE.csv'), direxp, overwrite = T)
-
-#############################################
-#SAVE to_run.R TO direxp
-#############################################
-
-file.copy(paste0(thisdir,'/to_run.R'), direxp, overwrite = T)
-
+# ###################################################################
+# # CREATE EMPTY FILES
+# ###################################################################
+# 
+# files <- sub('\\.csv$', '', list.files(dirinput))
+# 
+# if (!any(str_detect(files,"^SURVEY_ID"))) {
+#   print("Creating empty SURVEY_ID since none were found")
+#   fwrite(data.table(person_id = character(0), survey_id = character(0), survey_date = character(0),
+#                     survey_meaning = character(0)),
+#          paste0(dirinput, "SURVEY_ID", ".csv"))
+# }
+# 
+# if (!any(str_detect(files,"^SURVEY_OBSERVATIONS"))) {
+#   print("Creating empty SURVEY_OBSERVATIONS since none were found")
+#   fwrite(data.table(person_id = character(0), so_date = character(0), so_source_table = character(0),
+#                     so_source_column = character(0), so_source_value = character(0), so_unit = character(0),
+#                     survey_id = character(0)),
+#          paste0(dirinput, "SURVEY_OBSERVATIONS", ".csv"))
+# }
+# 
+# if (!any(str_detect(files,"^MEDICINES"))) {
+#   print("Creating empty MEDICINES since none were found")
+#   fwrite(data.table(person_id = character(0), medicinal_product_id = integer(0),
+#                     medicinal_product_atc_code = character(0), date_dispensing = integer(0),
+#                     date_prescription = logical(0), disp_number_medicinal_product = numeric(0),
+#                     presc_quantity_per_day = logical(0), presc_quantity_unit = logical(0),
+#                     presc_duration_days = logical(0), product_lot_number = logical(0),
+#                     indication_code = logical(0), indication_code_vocabulary = logical(0),
+#                     meaning_of_drug_record = character(0), origin_of_drug_record = character(0),
+#                     prescriber_speciality = logical(0), prescriber_speciality_vocabulary = logical(0),
+#                     visit_occurrence_id = character(0)),
+#          paste0(dirinput, "MEDICINES_FED", ".csv"))
+# }
+# 
+# rm(files)
+# 
+# #############################################
+# #SAVE METADATA TO direxp
+# #############################################
+# 
+# file.copy(paste0(dirinput,'/METADATA.csv'), direxp, overwrite = T)
+# file.copy(paste0(dirinput,'/CDM_SOURCE.csv'), direxp, overwrite = T)
+# file.copy(paste0(dirinput,'/INSTANCE.csv'), direxp, overwrite = T)
+# 
+# #############################################
+# #SAVE to_run.R TO direxp
+# #############################################
+# 
+# file.copy(paste0(thisdir,'/to_run.R'), direxp, overwrite = T)
+# 
 
 
 #############################################

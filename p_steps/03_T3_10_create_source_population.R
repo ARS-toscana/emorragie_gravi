@@ -1,7 +1,7 @@
 ########################################################%##
 #                                                          #
 ####  COMPUTE D3_source_population
-  ####
+####
 #                                                          #
 ########################################################%##
 
@@ -48,6 +48,8 @@ bleeding <- CreateSpells(
   end_date = "end_d"
 )
 
+bleeding[, entry_spell_category := entry_spell_category + 1 ]
+
 processing <- GenerateTDDataset(datasets = list(processing,bleeding),
                                 UoO_vars = c("person_id","person_id"),
                                 start_d_vars = c("start_date","entry_spell_category"),
@@ -76,7 +78,7 @@ processing <- processing[, ..tokeep]
 
 setorderv(
   processing,
-   c("person_id", "entry_cohort")
+  c("person_id", "entry_cohort")
 )
 
 

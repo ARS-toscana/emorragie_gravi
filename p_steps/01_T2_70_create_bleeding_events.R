@@ -11,7 +11,7 @@ if (TEST){
   thisdiroutput <- file.path(dirtest,testname,"g_output")
   dir.create(thisdiroutput, showWarnings = F)
 }else{
-  thisdirinput <- dirinput
+  thisdirinput <- dirtemp
   thisdiroutput <- dirtemp
 }
 

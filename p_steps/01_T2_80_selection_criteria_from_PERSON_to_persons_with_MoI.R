@@ -34,7 +34,7 @@ persons <- readRDS(file.path(thisdirinput, "D3_PERSONS.rds"))
 processing <- unique(dispensings[,.(person_id)])
 processing<- merge(processing,persons[,not_in_registry := 0], all.x = T, by = "person_id")
 processing <- processing[is.na(not_in_registry), not_in_registry := 1]
-processing <- processing[, no_gender_or_birthdate := fifelse(not_in_registry == 1 | is.na(gender) | is.na(birthdate),1,0)]
+processing <- processing[, no_gender_or_birthdate := fifelse(not_in_registry == 1 | is.na(gender) | is.na(birth_date),1,0)]
 
 persons_with_episode <- unique(episodes[,.(person_id)])
 persons_with_episode[,no_episode_of_treatment_overlapping_the_study_observation_period := 0]

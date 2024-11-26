@@ -44,5 +44,4 @@ source(paste0(thisdir,"/p_steps/07_T3_10_create_persontime_bleeding.R"))
 source(paste0(thisdir,"/p_steps/07_T3_20_apply_Cube_to_persontime_bleeding.R"))
 source(paste0(thisdir,"/p_steps/08_T4_30_create_D5_IR.R"))
 source(paste0(thisdir,"/p_steps/08_T5_35_create_Figure_1.R"))
-source(paste0(thisdir,"/p_steps/01_T2_20_create_spells.R"))
 

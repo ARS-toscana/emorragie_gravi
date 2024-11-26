@@ -2,10 +2,10 @@
 
 study_start_date <-  ymd(20150101)
 study_end_date <- ymd(20240630)
-
-instance_creation <- ymd(CDM_SOURCE[1,"date_creation"])
-recommended_end_date <- ymd(CDM_SOURCE[1,"recommended_end_date"])
-study_end_date <- min(study_end_date, instance_creation, recommended_end_date, na.rm = T)
+# 
+# instance_creation <- ymd(CDM_SOURCE[1,"date_creation"])
+# recommended_end_date <- ymd(CDM_SOURCE[1,"recommended_end_date"])
+# study_end_date <- min(study_end_date, instance_creation, recommended_end_date, na.rm = T)
 
 
 # periods
@@ -30,7 +30,7 @@ end_date_period[["3"]] <- study_end_date
 
 # days for CreateSpells
 
-days <- ifelse(thisdatasource %in% c("ARS","TEST"), 180, 1)
+days <- 365
 
 # agebands
 
@@ -41,6 +41,7 @@ names(Agebands_countpersontime) <- Agebands_labels
 Agebands_large = c(0, 18, 60)
 Agebands_large_labels = c("0-17","18-59","60+")
 names(Agebands_large) <- Agebands_large_labels
+
 
 # duration of apixaban and rivaroxaban
 

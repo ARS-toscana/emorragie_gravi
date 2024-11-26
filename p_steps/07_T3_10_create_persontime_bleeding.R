@@ -37,7 +37,7 @@ processing  <- CountPersonTime(
   End_study_time = gsub('-', '', as.character(study_end_date)),
   Start_date = "entry_cohort",
   End_date = "exit_cohort",
-  Birth_date = "birthdate",
+  Birth_date = "birth_date",
   Strata = c("sex"),
   Name_event = "event",
   Date_event = "date",
