@@ -9,6 +9,5 @@ generate_DAG()
 generate_Rmd()
 generate_website()
 
-
 # commit updated DAG, index and codebooks (after the committed changes are pushed, the site will be updated by GitHub within some minutes)
 stage_website()
