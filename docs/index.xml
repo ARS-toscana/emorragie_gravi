@@ -60,7 +60,8 @@ D3_PERSONScontains the cleaned version of PERSONS, where birth date and death da
       <description>D4_persontime_bleedingTable of occurrence of bleeding in the source population
 D4_Cube_persontime_bleedingpersontime including totals
 D4_persontime_bleeding_periodD4_Cube_persontime_bleeding_periodpersontime including totals
-D4_analytic_dataset </description>
+D4_analytical_datasetanalytical dataset for outcome analysis
+ </description>
     </item>
     <item>
       <title>_index.en</title>

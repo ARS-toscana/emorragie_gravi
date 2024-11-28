@@ -1,10 +1,10 @@
 ---
 weight: 5
-name_excel: "D4_analytic_dataset.xlsx"
+name_excel: "D4_analytical_dataset.xlsx"
 description: "`r get_description(rmarkdown::metadata$name_excel)`"
-slug: "D4_analytic_dataset"
-datetime: 1.7327905e+09
-title: D4_analytic_dataset
+slug: "D4_analytical_dataset"
+datetime: 1.7327926e+09
+title: D4_analytical_dataset
 author: ''
 date: '2024-11-28'
 categories: []

@@ -1,5 +1,5 @@
 publishDir: '../docs'
-baseURL: https://davidemessinaars.github.io/test_website/
+baseURL: https://davidemessinaars.github.io/emorragie_gravi/
 canonifyURLs: yes
 relativeURLs: yes
 uglyURLs: no
@@ -45,11 +45,11 @@ languages:
       shortcuts:
         - identifier: diagram 
           name: <i class='fas fa-project-diagram'></i> Diagram
-          url: https://imi-conception.github.io/DP3-MS-SLE/diagram.html
+          url: https://imi-conception.github.io/emorragie_gravi/diagram.html
           weight: 10
         - identifier: diagram draft
           name: <i class='fas fa-project-diagram'></i> Diagram
-          url: https://imi-conception.github.io/DP3-MS-SLE/diagram_draft.html
+          url: https://imi-conception.github.io/emorragie_gravi/diagram_draft.html
           weight: 10
         - identifier: ds
           name: <i class='fab fa-fw fa-github'></i> GitHub repo
