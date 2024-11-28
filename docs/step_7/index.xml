@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>_index.en on CVM Documentation</title>
+    <link>/step_7/index.html</link>
+    <description>Recent content in _index.en on CVM Documentation</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 28 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="/step_7/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>D4_persontime_bleeding</title>
+      <link>/step_7/d4_persontime_bleeding/index.html</link>
+      <pubDate>Thu, 28 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>/step_7/d4_persontime_bleeding/index.html</guid>
+      <description>MetadataData ModelParametersExample</description>
+    </item>
+    <item>
+      <title>D4_Cube_persontime_bleeding</title>
+      <link>/step_7/d4_cube_persontime_bleeding/index.html</link>
+      <pubDate>Thu, 28 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>/step_7/d4_cube_persontime_bleeding/index.html</guid>
+      <description>MetadataData ModelParametersExample</description>
+    </item>
+    <item>
+      <title>D4_persontime_bleeding_period</title>
+      <link>/step_7/d4_persontime_bleeding_period/index.html</link>
+      <pubDate>Thu, 28 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>/step_7/d4_persontime_bleeding_period/index.html</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>D4_Cube_persontime_bleeding_period</title>
+      <link>/step_7/d4_cube_persontime_bleeding_period/index.html</link>
+      <pubDate>Thu, 28 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>/step_7/d4_cube_persontime_bleeding_period/index.html</guid>
+      <description>MetadataData ModelParametersExample</description>
+    </item>
+    <item>
+      <title>D4_analytic_dataset</title>
+      <link>/step_7/d4_analytic_dataset/index.html</link>
+      <pubDate>Thu, 28 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>/step_7/d4_analytic_dataset/index.html</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>
