@@ -1,6 +1,6 @@
 ########################################################%##
 #                                                          #
-####  COMPUTE D3_source_population
+####  COMPUTE D5_results_from_analysis
 ####
 #                                                          #
 ########################################################%##
@@ -8,7 +8,7 @@
 
 # authors: Rosa Gini, Ersilia Lucenteforte
 
-# v 0.1 26 Nov 2024
+# v 0.1 28 Nov 2024
 
 #########################################
 # assign input and output directories
@@ -25,7 +25,7 @@ if (TEST){
 
 # import input datasets
 
-input <- readRDS(file.path(thisdirinput, "D4_analytic_dataset.rds"))
+input <- readRDS(file.path(thisdirinput, "D4_analytical_dataset.rds"))
 
 # analysis
 
