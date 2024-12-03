@@ -2,6 +2,9 @@
 
 study_start_date <-  ymd(20150101)
 study_end_date <- ymd(20240630)
+
+baselinedate_components <- ymd(20190101)
+
 # 
 # instance_creation <- ymd(CDM_SOURCE[1,"date_creation"])
 # recommended_end_date <- ymd(CDM_SOURCE[1,"recommended_end_date"])

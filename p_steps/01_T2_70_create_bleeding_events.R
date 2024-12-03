@@ -18,7 +18,7 @@ if (TEST){
 # import
 
 load(file.path(thisdirinput, "bleeding_narrow.RData"))
-load(file.path(thisdirinput, "bleeding_broad.RData"))
+load(file.path(thisdirinput, "bleeding_possible.RData"))
 
 # processing 
 
@@ -26,7 +26,8 @@ processing <- bleeding_narrow
 
 processing[, event := "bleeding_narrow"]
 
-processing <- rbind(processing, bleeding_broad, fill = T)
+processing <- rbind(processing, bleeding_narrow, fill = T)
+processing <- rbind(processing, bleeding_possible, fill = T)
 
 processing <- processing[is.na(event), event := "bleeding_broad"]
 
