@@ -1,6 +1,6 @@
 # author: Rosa Gini
 
-# v 1.0 3 Dec 2024
+# v 1.0 10 Dec 2024
 
 #########################################
 # assign input and output directories
@@ -18,35 +18,45 @@ if (TEST){
 # import
 
 load(file.path(thisdirinput, "bleeding_narrow.RData"))
-load(file.path(thisdirinput, "bleeding_possible.RData"))
 source_population <- readRDS(file.path(thisdirinput, "D3_source_population.rds"))
 
 # processing 
 
 processing <- bleeding_narrow
 
-processing[, event := "bleeding_narrow"]
-
-processing <- rbind(processing, bleeding_possible, fill = T)
-
-processing <- processing[is.na(event), event := "bleeding_possible"]
-
 
 setnames(processing,c("ID","DATE"),c("person_id","date"))
 
 processing <- processing[date >= baselinedate_components & date <= baselinedate_components + 365,]
 
-processing[,component := paste0(event,"_",Table_cdm,"_",meaning)]
+processing <- processing[ meaning == "emergency_room_diagnosis" & esito %in% list_outcomesER_severe ,component := "ER_SEVERE"]
+
+processing <- processing[is.na(component) & meaning == "emergency_room_diagnosis",component := "ER_NON_SEVERE"]
+
+processing <- processing[is.na(component) &  meaning == "hospital_main_diagnosis" & pres == 0 ,component := "HOSP_MAIN_NOPRES"]
+
+processing <- processing[is.na(component) &  meaning == "hospital_main_diagnosis"  ,component := "HOSP_MAIN_PRES"]
+
+# processing <- processing[is.na(component) &  meaning == "hospital_main_diagnosis" ,component := "HOSP_MAIN_MIPRES"]
+
+processing <- processing[is.na(component) &  meaning == "hospital_sec_diagnosis" & pres == 0 ,component := "HOSP_SEC_NOPRES"]
+
+processing <- processing[is.na(component) &  meaning == "hospital_sec_diagnosis" ,component := "HOSP_SEC_PRES"]
+
+# processing <- processing[is.na(component) &  meaning == "hospital_sec" ,component := "HOSP_SEC_MIPRES"]
+
 
 processing <- processing[,.(mindate_comp = min(date)),by = .(person_id,component)]
 
+# keep only the components belonging to the same episode of bleeding, i.e., within 30 days from the inception of the episode
 processing[, mindate := min(mindate_comp),by = .(person_id)]
 processing[, numdayscomp :=  as.integer(mindate_comp - mindate)]
-
 processing <- processing[numdayscomp <= 30,]
 
+# keep all components per person
 processing <- processing[,.(person_id,component)]
 
+# reshape wide
 processing <- dcast(
   processing, 
   person_id ~ component, 
@@ -54,8 +64,7 @@ processing <- dcast(
   value.var = "component"
 )
 
-# processing[, (names(processing)[-1]) := lapply(.SD, function(x) as.integer(x > 0)), .SDcols = -"person_id"]
-
+# merge with source population included in the cohort on the date baselinedate_components
 
 source_population <- source_population[entry_cohort<= baselinedate_components & baselinedate_components <= exit_cohort,]
 
@@ -63,9 +72,16 @@ source_population <- source_population[,.(person_id)]
 
 processing <- merge(source_population,processing, all.x = T)
 
+# set to 0 componnets that are not observed
+
 for (var in setdiff(names(processing),"person_id")) {
   processing <- processing[ is.na(get(var)), (var) := 0]
 }
+
+# aggregate and create D4
+
+aggregate <- processing[, .N, by = setdiff(names(processing),"person_id") ]
+
 
 ################################
 # clean
@@ -86,6 +102,14 @@ for (var in setdiff(names(processing),"person_id")) {
 outputfile <- processing
 
 nameoutput <- "D3_bleeding_components"
+nameoutputext <- paste0(nameoutput,".rds")
+assign(nameoutput, outputfile)
+saveRDS(outputfile, file = file.path(thisdiroutput, nameoutputext))
+
+
+outputfile <- aggregate
+
+nameoutput <- "D4_bleeding_components_N"
 nameoutputext <- paste0(nameoutput,".rds")
 assign(nameoutput, outputfile)
 saveRDS(outputfile, file = file.path(thisdiroutput, nameoutputext))

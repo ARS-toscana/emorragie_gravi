@@ -1,5 +1,8 @@
 rm(list=ls(all.names=TRUE))
 
+baselinedate <- 20190101
+
+
 #set the directory where the script is saved as the working directory
 if (!require("rstudioapi")) install.packages("rstudioapi")
 thisdir <- setwd(dirname(rstudioapi::getSourceEditorContext()$path))
@@ -13,11 +16,16 @@ library(lubridate)
 
 # list of datasets
 
-listdatasets <- c("D4_persons_with_MoI","D3_bleeding_events","D3_episodes_of_treatment","D3_PERSONS")
+listdatasetsRData <- c("bleeding_narrow")
+
+listdatasets <- c(listdatasetsRData,"D4_persons_with_MoI","D3_episodes_of_treatment","D3_PERSONS")
 
 # dates variables 
 
 listdates <- list()
+for (ds in listdatasetsRData){
+  listdates[[ds]] <- c("DATE")
+}
 listdates[["D3_bleeding_events"]] <- "date"
 listdates[["D3_PERSONS"]] <- c("birth_date","death_date")
 listdates[["D3_episodes_of_treatment"]] <- c("start_date", "end_date")
@@ -27,7 +35,7 @@ listdates[["D3_episodes_of_treatment"]] <- c("start_date", "end_date")
 baseline <- vector(mode="list")
 for (namedataset in listdatasets) {
   for (datevar in listdates[[namedataset]]) {
-    baseline[[namedataset]][[datevar]] <- as.Date(lubridate::ymd(20150101))
+    baseline[[namedataset]][[datevar]] <- as.Date(lubridate::ymd(baselinedate))
   }
 }
 
@@ -50,6 +58,9 @@ for (namedataset in listdatasets){
   }
   
   assign(namedataset,data)
-  saveRDS(data, file = paste0(thisdir, "/", namedataset,".rds"))
-}
+  if (namedataset %in% listdatasetsRData){
+    save(data, file = file.path(thisdir, paste0(namedataset,".RData")), list = namedataset)
+  }else{
+    saveRDS(data, file = file.path(thisdir, paste0(namedataset,".rds")))
+  }}
 

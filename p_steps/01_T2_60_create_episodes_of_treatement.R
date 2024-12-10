@@ -32,6 +32,7 @@ obsperiods <- readRDS(file.path(thisdirinput, "D3_clean_spells.rds"))
 
 for (j in c(1,2)) {
   temp <- dispensings[label == j,]
+  temp <- temp[is.na (duration) , duration := 30]
   temp <- compute.treatment.episodes(temp,
                                            ID.colname= "person_id",
                                            event.date.colname= "date",

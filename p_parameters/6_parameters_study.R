@@ -50,3 +50,6 @@ names(Agebands_large) <- Agebands_large_labels
 
 duration_MoI <- as.data.table(readxl::read_excel(file.path(thisdir,"p_parameters","archive_parameters","duration_MoI.xlsx")))
 
+# components
+
+list_outcomesER_severe <- c(2,3,4,8,9)

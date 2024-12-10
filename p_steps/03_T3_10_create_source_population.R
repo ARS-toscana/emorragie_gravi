@@ -8,6 +8,11 @@
 
 # author: Rosa Gini
 
+
+# v 1.1 10 Dec 2024
+
+# bleeding episodes are now retrieved from conceptsets directly
+
 # v 1.0 24 Nov 2024
 
 #########################################
@@ -28,7 +33,11 @@ if (TEST){
 processing <- readRDS(file.path(thisdirinput, "D4_persons_with_MoI.rds"))
 
 episodes <- readRDS(file.path(thisdirinput, "D3_episodes_of_treatment.rds"))
-bleeding <- readRDS(file.path(thisdirinput, "D3_bleeding_events.rds")) 
+
+load(file.path(thisdirinput, "bleeding_narrow.RData"))
+
+bleeding <- bleeding_narrow
+setnames(bleeding,c("ID","DATE"),c("person_id","date"))
 
 persons <- readRDS(file.path(thisdirinput, "D3_PERSONS.rds"))
 # compute the dataset
@@ -37,7 +46,7 @@ processing <- merge(processing,episodes, all = F, by = "person_id")
 
 # remove days of bleeding and 30 days after
 
-bleeding <- bleeding[event == "bleeding_broad", ]
+# bleeding <- bleeding[event == "bleeding_broad", ]
 
 bleeding[, end_d := date + 30]
 
