@@ -101,6 +101,8 @@ combined_data <- bind_rows(lapply(names(results_updated), function(name) {
     mutate(outcome = name)
 }), .id = "id")
 
+png(file.path(thisdiroutput,"outcomes.png"), units="in", height=10, width=15, res=300)
+
 # scatter plot separati per outcome (nel tempo)
 ggplot(combined_data, aes(x = time, y = prop_broad)) +
   geom_line(aes(color = outcome), size = 1) +
@@ -113,6 +115,8 @@ ggplot(combined_data, aes(x = time, y = prop_broad)) +
   theme_minimal(base_size = 14) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
   facet_wrap(~outcome, scales = "free_y")
+
+dev.off()
 
 fit_models <- function(data) {
   
@@ -131,6 +135,8 @@ fit_models <- function(data) {
 }
 
 model_results <- map(results_updated, fit_models)
+
+save(model_results, file = file.path(thisdiroutput,"model_results.rda"))
 
 
 
