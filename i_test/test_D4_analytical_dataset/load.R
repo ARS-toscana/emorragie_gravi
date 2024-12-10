@@ -11,22 +11,24 @@ library(data.table)
 if (!require("lubridate")) install.packages("lubridate")
 library(lubridate)
 
+baselinedate <- 20190101
+
 # list of datasets
 
-listdatasets <- c("D3_bleeding_events","D3_source_population")
+listdatasets <- c("D3_study_population")
 
 # dates variables 
 
 listdates <- list()
 listdates[["D3_bleeding_events"]] <- "date"
-listdates[["D3_source_population"]] <- c("birthdate", "entry_cohort","exit_cohort")
+listdates[["D3_study_population"]] <- c("birth_date", "death_date","date_bleeding","end_followup_d")
 
 # date baseline
 
 baseline <- vector(mode="list")
 for (namedataset in listdatasets) {
   for (datevar in listdates[[namedataset]]) {
-    baseline[[namedataset]][[datevar]] <- as.Date(lubridate::ymd(20150101))
+    baseline[[namedataset]][[datevar]] <- as.Date(lubridate::ymd(baselinedate))
   }
 }
 

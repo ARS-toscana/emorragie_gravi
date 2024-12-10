@@ -2,6 +2,10 @@
 
 # author: Rosa Gini
 
+# v 0.8 10 Dec 2024
+
+# component strategy and draft analysis
+
 # v 0.6 25 Nov 2024
 
 # complete for test Figure 1
@@ -42,8 +46,12 @@ source(paste0(thisdir,"/p_steps/03_T3_10_create_source_population.R"))
 source(paste0(thisdir,"/p_steps/04_T2_10_create_bleeding_components.R"))
 source(paste0(thisdir,"/p_steps/05_T4_10_analyse_bleeding_components.R"))
 source(paste0(thisdir,"/p_steps/06_T2_10_create_bleeding_events.R"))
+source(paste0(thisdir,"/p_steps/06_T2_20_create_study_population.R"))
 source(paste0(thisdir,"/p_steps/07_T3_10_create_persontime_bleeding.R"))
 source(paste0(thisdir,"/p_steps/07_T3_20_apply_Cube_to_persontime_bleeding.R"))
+source(paste0(thisdir,"/p_steps/07_T3_30_create_analytical_dataset.R"))
 source(paste0(thisdir,"/p_steps/08_T4_30_create_D5_IR.R"))
+source(paste0(thisdir,"/p_steps/08_T4_40_analysis.R"))
+
 source(paste0(thisdir,"/p_steps/08_T5_35_create_Figure_1.R"))
 
