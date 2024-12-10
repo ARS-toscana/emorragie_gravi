@@ -1,6 +1,6 @@
 # #set dates
 
-study_start_date <-  ymd(20150101)
+study_start_date <-  ymd(20180101)
 study_end_date <- ymd(20240630)
 
 baselinedate_components <- ymd(20190101)
@@ -16,19 +16,19 @@ baselinedate_components <- ymd(20190101)
 start_date_period <- list()
 end_date_period <- list()
 
-start_date_period[["1"]] <- study_start_date
-end_date_period[["1"]] <- ymd(20190708)
+start_date_period[["1a"]] <- study_start_date
+end_date_period[["1a"]] <- ymd(20200308)
 
-start_date_period[["2a"]] <- end_date_period[["1"]] + 1
-end_date_period[["2a"]] <- ymd(20200305)
+start_date_period[["1b"]] <- end_date_period[["1a"]] + 1
+end_date_period[["1b"]] <- ymd(20210621)
 
-start_date_period[["2b"]] <- end_date_period[["2a"]] + 1
-end_date_period[["2b"]] <- ymd(20210621)
+start_date_period[["1c"]] <- end_date_period[["1b"]] + 1
+end_date_period[["1c"]] <- ymd(20210831)
 
-start_date_period[["2c"]] <- end_date_period[["2b"]] + 1
-end_date_period[["2c"]] <- ymd(20230731)
+start_date_period[["2"]] <- end_date_period[["1c"]] + 1
+end_date_period[["2"]] <- ymd(20230731)
 
-start_date_period[["3"]] <- end_date_period[["2c"]] + 1
+start_date_period[["3"]] <- end_date_period[["2"]] + 1
 end_date_period[["3"]] <- study_end_date
 
 # days for CreateSpells
