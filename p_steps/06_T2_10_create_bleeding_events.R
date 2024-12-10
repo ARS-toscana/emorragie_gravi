@@ -1,5 +1,9 @@
 # author: Rosa Gini
 
+# v 1.2 10 Dec 2024
+
+# update definition of narrow based on cpmponent strategy
+
 # v 1.0 24 Nov 2024
 
 #########################################
@@ -18,18 +22,13 @@ if (TEST){
 # import
 
 load(file.path(thisdirinput, "bleeding_narrow.RData"))
-load(file.path(thisdirinput, "bleeding_possible.RData"))
 
 # processing 
 
 processing <- bleeding_narrow
 
-processing[, event := "bleeding_narrow"]
-
-processing <- rbind(processing, bleeding_narrow, fill = T)
-processing <- rbind(processing, bleeding_possible, fill = T)
-
-processing <- processing[is.na(event), event := "bleeding_broad"]
+processing <- processing[(meaning == "hospital_main_diagnosis") | (meaning == "hospital_sec_diagnosis" & pres == 1) | (meaning == "emergency_room_diagnosis" & esito %in% list_outcomesER_severe ), event := "bleeding_narrow"]
+processing <- processing[is.na(event), event := "bleeding_possible"]
 
 setnames(processing,c("ID","DATE"),c("person_id","date"))
 
