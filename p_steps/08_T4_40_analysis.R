@@ -142,6 +142,8 @@ ggplot(combined_data, aes(x = time, y = prop_narrow)) +
 
 dev.off()
 
+# analysis with time as unit ----
+
 fit_models <- function(data) {
   
   data <- data %>%
@@ -164,6 +166,24 @@ fit_models <- function(data) {
 model_results <- map(results_updated, fit_models)
 
 save(model_results, file = file.path(thisdiroutput,"model_results.rda"))
+
+# analysis with individual as unit ----
+
+
+fit_indiv_narrow <- summary(glmer(outcome_DEATH ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input))
+
+save(fit_indiv_narrow, file = file.path(thisdiroutput,"fit_indiv_narrow.rda"))
+
+# fit_models_indiv <- function(data) {
+#   
+#      data <- data %>%
+#         mutate(period = factor(period))
+# 
+#     fit3 <- glmer(n_emor_narrow ~ period + age + gender + (1|person_id), family = binomial, data = data)
+# 
+# }
+# 
+# model_results_indiv <- map(results_updated, fit_models_indiv)
 
 
 
