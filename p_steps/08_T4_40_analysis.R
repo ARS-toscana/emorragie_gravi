@@ -113,7 +113,22 @@ ggplot(combined_data, aes(x = time, y = prop_broad)) +
   geom_line(aes(color = outcome), size = 1) +
   geom_point(size = 1) +
   labs(
-    title = "Andamento della proporzione degli outcome di interesse",
+    title = "Andamento della proporzione degli outcome di interesse (def. possible)",
+    x = "Tempo, mesi",
+    y = "Proporzione"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  facet_wrap(~outcome, scales = "free_y")
+
+dev.off()
+
+# scatter plot separati per outcome (nel tempo)
+ggplot(combined_data, aes(x = time, y = prop_narrow)) +
+  geom_line(aes(color = outcome), size = 1) +
+  geom_point(size = 1) +
+  labs(
+    title = "Andamento della proporzione degli outcome di interesse (def.narrow)",
     x = "Tempo, mesi",
     y = "Proporzione"
   ) +
