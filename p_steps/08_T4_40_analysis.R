@@ -35,17 +35,17 @@ input <- readRDS(file.path(thisdirinput, "D4_analytical_dataset.rds"))
 
 # analysis
 input <- input %>% 
-           mutate(date_outcome = date_bleeding+15,
-                  time = as.numeric(ceiling((date_outcome - as.Date("2018-01-01"))/30)),
-                  month = month(date_outcome))
+           mutate(time = as.numeric(ceiling((date_bleeding+1 - as.Date("2018-01-01"))/30)),
+                  month = month(date_bleeding))
 
 fix_time <- data.frame(
              time = as.numeric(1:84)) %>% 
              mutate(year = cut(time, breaks = seq(1,96, by = 12), labels = c(2018:2024), right = FALSE),
-                    period = case_when(time <= 26 | (time > 42 & time <= 44) ~ 1,
-                                       time > 26 & time <= 42 ~ 2,
-                                       time > 44 & time <= 67 ~ 3,
-                                       time > 67 ~ 4)) %>% 
+                    period = case_when(time <= 26 ~ "1a",
+                                       (time > 26 & time <= 41) ~ "1b",
+                                       (time > 41 & time <= 44) ~ "1c",
+                                       (time > 44 & time <= 67) ~ "2",
+                                       time > 67 ~ "3")) %>% 
              group_by(year) %>% 
              mutate(month = 1:12) %>% 
              relocate(year, .before = time) %>% 
@@ -71,16 +71,18 @@ results <- map(outcome_vars, function(var) {
     group_by(time) %>% 
     summarise(event_narrow = sum(.data[[var]]*(type_bleeding == "narrow"), na.rm = T),
               event_broad = sum(.data[[var]]*(type_bleeding == "possible"), na.rm = T)) %>% 
-    mutate(period = case_when(time <= 26 | (time > 42 & time <= 44) ~ 1,
-                              time > 26 & time <= 42 ~ 2,
-                              time > 44 & time <= 67 ~ 3,
-                              time > 67 ~ 4),
-           year = cut(time, breaks = seq(1,96, by = 12), labels = c(2018:2024), right = FALSE)) %>%
+    mutate(period = case_when(time <= 26 ~ "1a",
+                              (time > 26 & time <= 41) ~ "1b",
+                              (time > 41 & time <= 44) ~ "1c",
+                              (time > 44 & time <= 67) ~ "2",
+                              time > 67 ~ "3"),
+             year = cut(time, breaks = seq(1,96, by = 12), labels = c(2018:2024), right = FALSE)) %>%
     relocate(year, .before = time)
   
 })
 
 names(results) <- outcome_vars
+
 
 results_updated <- list()
 
