@@ -106,7 +106,7 @@ combined_data <- bind_rows(lapply(names(results_updated), function(name) {
     mutate(outcome = name)
 }), .id = "id")
 
-png(file.path(thisdiroutput,"outcomes.png"), units="in", height=10, width=15, res=300)
+png(file.path(thisdiroutput,"outcomes_possible.png"), units="in", height=10, width=15, res=300)
 
 # scatter plot separati per outcome (nel tempo)
 ggplot(combined_data, aes(x = time, y = prop_broad)) +
@@ -122,6 +122,8 @@ ggplot(combined_data, aes(x = time, y = prop_broad)) +
   facet_wrap(~outcome, scales = "free_y")
 
 dev.off()
+
+png(file.path(thisdiroutput,"outcomes_narrow.png"), units="in", height=10, width=15, res=300)
 
 # scatter plot separati per outcome (nel tempo)
 ggplot(combined_data, aes(x = time, y = prop_narrow)) +
