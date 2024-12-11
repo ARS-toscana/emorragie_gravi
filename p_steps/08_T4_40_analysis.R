@@ -120,6 +120,9 @@ dev.off()
 
 fit_models <- function(data) {
   
+  data <- data %>%
+            mutate(period = factor(period))
+  
   list(
     # periodo
     fit_periodo_narrow <- summary(glm(cbind(event_narrow, n_emor_narrow) ~ period, family = binomial, data = data)),
