@@ -8,7 +8,7 @@
 # author: Rosa Gini
 
 
-# v 1.0 11 Dec 2024
+# v 0.1 11 Dec 2024
 
 #########################################
 # assign input and output directories
@@ -27,12 +27,25 @@ if (TEST){
 
 
 for (type in c("narrow","broad")) {
-  tab <- readRDS(file.path(thisdirinput, "D3_study_population.rds"))
+  cohort <- readRDS(file.path(thisdirinput, "D3_study_population.rds"))
+  
   if (type == "narrow") {
-    tab <- tab[type_bleeding == "narrow",]
+    cohort <- cohort[type_bleeding == "narrow",]
   }
   
-    # ...
+  base_table2 <- cohort[, .(n = .N), by = period]
+  temp <- cohort[gender == "F", .(n_gender_F = .N), by = period]
+  base_table2 <- merge(base_table2,temp,by = "period")
+  base_table2[,p_gender_F := round(100 * n_gender_F/n,1)]
+  
+  for (val in unlist(unique(cohort[,.(ageband)]))) {
+    temp <- cohort[ageband == val, .(n_temp = .N), by = period]
+    base_table2 <- merge(base_table2,temp,by = "period")
+    base_table2[,p_temp := round(100 * n_temp/n,1)]
+    data.table::setnames(base_table2,c("n_temp","p_temp"),c(paste0("n_ageband_",val),paste0("p_ageband_",val)))
+  }
+  
+  
   
   # ################################
   # # clean
@@ -50,7 +63,7 @@ for (type in c("narrow","broad")) {
   # #########################################
   # # save
   # 
-  # outputfile <- processing
+  # outputfile <- base_table2
   # 
   # nameoutput <- paste0("D5_Table_2_",type)
   # nameoutputext <- paste0(nameoutput,".rds")
