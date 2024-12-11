@@ -27,7 +27,14 @@ if (TEST){
 cohort <- readRDS(file.path(thisdirinput, "D3_source_population.rds"))
 events <- readRDS(file.path(thisdirinput, "D3_bleeding_events.rds"))
 
+eventsbroad <- copy(events)
+eventsbroad[,event := "bleeding_broad"]
+
+events <- events[event == "bleeding_narrow",]
+events <-   rbind(events,eventsbroad,fill= T)
 # ..
+
+cohort <- cohort[exit_cohort > entry_cohort,]
 
 processing  <- CountPersonTime(
   Dataset_events = events,
@@ -38,7 +45,7 @@ processing  <- CountPersonTime(
   Start_date = "entry_cohort",
   End_date = "exit_cohort",
   Birth_date = "birth_date",
-  Strata = c("sex"),
+  Strata = c("gender"),
   Name_event = "event",
   Date_event = "date",
   Age_bands = Agebands_countpersontime,
@@ -48,11 +55,11 @@ processing  <- CountPersonTime(
   Unit_of_age = "year",
   include_remaning_ages = T,
   Aggregate = T
-  )
+)
 
 # processing[, Persontime := NULL]
 
-setnames(processing, c("sex", "Ageband"), c("gender", "ageband"))
+setnames(processing, c( "Ageband"), c("ageband"))
 
 for (event in c("none","bleeding_narrow","bleeding_broad")) {
   namept <- fifelse(event == "none","Persontime",paste0("Persontime_",event))

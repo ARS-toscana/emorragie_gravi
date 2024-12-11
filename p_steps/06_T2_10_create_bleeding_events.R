@@ -27,7 +27,7 @@ load(file.path(thisdirinput, "bleeding_narrow.RData"))
 
 processing <- bleeding_narrow
 
-processing <- processing[(meaning == "hospital_main_diagnosis") | (meaning == "hospital_sec_diagnosis" & pres == 1) | (meaning == "emergency_room_diagnosis" & esito %in% list_outcomesER_severe ), event := "bleeding_narrow"]
+processing <- processing[(meaning == "hospital_main_diagnosis") | (meaning == "emergency_room_diagnosis" & esito %in% list_outcomesER_severe ), event := "bleeding_narrow"]
 processing <- processing[is.na(event), event := "bleeding_possible"]
 
 setnames(processing,c("ID","DATE"),c("person_id","date"))

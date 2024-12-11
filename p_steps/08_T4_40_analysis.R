@@ -8,8 +8,13 @@
 
 # authors: Rosa Gini, Ersilia Lucenteforte, Sabrina Giometto
 
-# v 0.1 28 Nov 2024
+# v 0.3 11 Dec 2024
+
+# exposure as factor
+
 # v 0.2 06 Dic 2024
+
+# v 0.1 28 Nov 2024
 
 #########################################
 # assign input and output directories

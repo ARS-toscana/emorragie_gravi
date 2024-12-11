@@ -35,11 +35,6 @@ processing <- processing[event == "bleeding_possible", type_bleeding := "possibl
 
 # period
 
-end_date_period <- list()
-end_date_period[["1a"]] <- ymd(20200229)
-end_date_period[["1b"]] <- ymd(20210531)
-end_date_period[["1c"]] <- ymd(20210831)
-end_date_period[["2"]] <- ymd(20230731)
 
 processing[, period := NA_character_]
 processing[is.na(period) & date_bleeding <= end_date_period[["1a"]], period := "1a"]

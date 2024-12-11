@@ -64,8 +64,8 @@ p <- ggplot(input_fig, aes(x = quarter_date)) +
   geom_line(aes(y = IR_bleeding_broad), color = "darkgrey", size = 1) +
 
   # Add annotations for specific dates and periods
-  geom_vline(xintercept = as.Date("2019-07-08"), color = "blue", linetype = "dashed") +
-  geom_text(aes(x = as.Date("2019-07-08"), label = "Antidoto in commercio", y = Inf), hjust = 1.1, vjust = 1.5, angle = 90, color = "blue") +
+  geom_vline(xintercept = as.Date(start_date_period[["2"]]), color = "darkblue", linetype = "dashed") +
+  geom_text(aes(x = as.Date(start_date_period[["2"]]), label = "Antidoto in Toscana", y = Inf), hjust = 1.1, vjust = 1.5, angle = 90, color = "darkblue") +
 
   geom_vline(xintercept = as.Date("2023-07-31"), color = "green", linetype = "dashed") +
   geom_text(aes(x = as.Date("2023-07-31"), label = "Linee guida", y = Inf), hjust = 1.1, vjust = 1.5, angle = 90, color = "green") +

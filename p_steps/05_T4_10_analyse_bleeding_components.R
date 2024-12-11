@@ -79,7 +79,7 @@ if (nrow(component_dataset > 0)) {
                                      "ER grave vs Ric princ (1 vs 8)", #13 
                                      "ER grave vs Ricovero (1 vs 10)", #14
                                     "ER non grave vs Ricovero (2 vs 10)", # 15
-                                    "ER grave vs Ric sec PA (1 vs 4)", # 16
+                                    "ER grave vs Ric sec NPA (1 vs 4)", # 16
                                     "ER grave vs Ric PA (1 or 11)" # 17
                                    ),
                                    figure_name = figure_name,
