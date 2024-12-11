@@ -13,6 +13,33 @@ library(data.table)
 if (!require("lubridate")) install.packages("lubridate")
 library(lubridate)
 
+# study period
+
+study_start_date <-  ymd(20180101)
+study_end_date <- ymd(20231231)
+
+
+start_date_period <- list()
+end_date_period <- list()
+
+
+
+end_date_period <- list()
+end_date_period[["1a"]] <- ymd(20200229)
+end_date_period[["1b"]] <- ymd(20210531)
+end_date_period[["1c"]] <- ymd(20210831)
+end_date_period[["2"]] <- ymd(20230731)
+end_date_period[["3"]] <- study_end_date
+
+
+start_date_period[["1a"]] <- study_start_date
+start_date_period[["1b"]] <- end_date_period[["1a"]] + 1
+start_date_period[["1c"]] <- end_date_period[["1b"]] + 1
+start_date_period[["2"]] <- end_date_period[["1c"]] + 1
+start_date_period[["3"]] <- end_date_period[["2"]] + 1
+
+
+
 # name of the dataset to be generated
 namedataset <- "D4_analytical_dataset"
 
@@ -66,17 +93,12 @@ data[,date_bleeding := as.Date(ymd(20180101) + date_bleeding)]
 
 # period
 
-end_date_period <- list()
-end_date_period[["1"]] <- ymd(20190708)
-end_date_period[["2a"]] <- ymd(20200305)
-end_date_period[["2b"]] <- ymd(20210621)
-end_date_period[["2c"]] <- ymd(20230731)
 
 data[, period := NA_character_]
-data[date_bleeding <= end_date_period[["1"]], period := "1"]
-data[is.na(period) & date_bleeding <= end_date_period[["2a"]], period := "2a"]
-data[is.na(period) & date_bleeding <= end_date_period[["2b"]], period := "2b"]
-data[is.na(period) & date_bleeding <= end_date_period[["2c"]], period := "2c"]
+data[date_bleeding <= end_date_period[["1a"]], period := "1a"]
+data[is.na(period) & date_bleeding <= end_date_period[["1b"]], period := "1b"]
+data[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
+data[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
 data[is.na(period),  period := "3"]  
 
 # type_bleeding
@@ -157,10 +179,10 @@ for (j in 1:26) {
 
 # dependency on period (exposure)
 
-coeff[["1"]] <- log(2)
-coeff[["2a"]] <- log(1)
-coeff[["2b"]] <- log(.5)
-coeff[["2c"]] <- log(1)
+coeff[["1a"]] <- log(2)
+coeff[["1b"]] <- log(.5)
+coeff[["1c"]] <- log(2)
+coeff[["2"]] <- log(1)
 coeff[["3"]] <- log(1)
 
 for (per in unlist(unique(data[,.(period)]))) {
@@ -232,20 +254,35 @@ seedout <- 34566
 set.seed(seedout)
 datan[, outcome_DEATH := as.integer(runif(.N) < prob)]
 
-datan[date_bleeding <= end_date_period[["1"]], period := "1"]
-datan[is.na(period) & date_bleeding <= end_date_period[["2a"]], period := "2a"]
-datan[is.na(period) & date_bleeding <= end_date_period[["2b"]], period := "2b"]
-datan[is.na(period) & date_bleeding <= end_date_period[["2c"]], period := "2c"]
+datan[date_bleeding <= end_date_period[["1a"]], period := "1a"]
+datan[is.na(period) & date_bleeding <= end_date_period[["1b"]], period := "1b"]
+datan[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
+datan[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
 datan[is.na(period),  period := "3"]  
 
-# append and clean
 
 data <- rbind(data,datan)
 
 data[,episode_id := seq_len(.N)]
 
-tokeep <- c("episode_id", "person_id", "gender", "ageband", "date_bleeding", "type_bleeding", "period", "outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_DEATH", paste0("covariate_",as.character(1:26)))
+
+# define age
+
+agebands <- c(agebands, "100")
+agebands_numeric <- as.integer(c(agebands, 100))
+data[, ageband_num := as.integer(agebands[as.integer(ageband)])]  # 
+data[, age := {
+  lower <- ageband_num
+  upper <- agebands_numeric[match(lower, agebands_numeric) + 1] - 1
+  sample(lower:upper, size = .N, replace = TRUE)
+}, by = ageband]
+
+
+# append and clean
+
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_DEATH", paste0("covariate_",as.character(1:26)))
 
 data <- data[, ..tokeep]
+
 
 saveRDS(data, file = paste0(thisdir, "/", namedataset,".rds"))
