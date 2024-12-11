@@ -26,7 +26,7 @@ end_date_period[["2"]] <- ymd(20230731)
 end_date_period[["3"]] <- study_end_date
 
 
-start_date_period[["1"]] <- study_start_date
+start_date_period[["1a"]] <- study_start_date
 start_date_period[["1b"]] <- end_date_period[["1a"]] + 1
 start_date_period[["1c"]] <- end_date_period[["1b"]] + 1
 start_date_period[["2"]] <- end_date_period[["1c"]] + 1
