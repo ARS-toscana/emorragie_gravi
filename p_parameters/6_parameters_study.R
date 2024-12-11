@@ -1,7 +1,7 @@
 # #set dates
 
 study_start_date <-  ymd(20180101)
-study_end_date <- ymd(20240630)
+study_end_date <- ymd(20240330)
 
 baselinedate_components <- ymd(20190101)
 
@@ -57,3 +57,7 @@ duration_MoI <- as.data.table(readxl::read_excel(file.path(thisdir,"p_parameters
 # components
 
 list_outcomesER_severe <- c(2,3,4,8,9)
+
+
+baselinedate_components <- ymd(20190101)
+

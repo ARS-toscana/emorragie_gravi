@@ -7,6 +7,10 @@
 
 # author: Rosa Gini
 
+# v 0.2 10 Dec 2024
+
+# restrict to study period
+
 # v 0.1 10 Dec 2024
 
 #########################################
@@ -35,13 +39,13 @@ processing <- processing[event == "bleeding_possible", type_bleeding := "possibl
 
 # period
 
-
 processing[, period := NA_character_]
 processing[is.na(period) & date_bleeding <= end_date_period[["1a"]], period := "1a"]
 processing[is.na(period) & date_bleeding <= end_date_period[["1b"]], period := "1b"]
 processing[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
 processing[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
-processing[is.na(period),  period := "3"]
+processing[is.na(period) & date_bleeding <= end_date_period[["3"]],  period := "3"]
+processing <- processing[!is.na(period),]
 
 # age
 
@@ -54,7 +58,7 @@ processing[,outcome_DEATH := fifelse(!is.na(death_date) & death_date >= date_ble
 ################################
 # clean
 
-tokeep <- c("person_id","sex","age","date_bleeding","type_bleeding","period","outcome_DEATH" )
+tokeep <- c("person_id","gender","age","date_bleeding","type_bleeding","period","outcome_DEATH" )
 
 processing <- processing[, ..tokeep]
 
