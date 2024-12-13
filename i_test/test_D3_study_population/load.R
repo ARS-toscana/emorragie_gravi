@@ -15,13 +15,15 @@ datebaseline <- "20190101"
 
 # list of datasets
 
-listdatasets <- c("D3_bleeding_events","D3_source_population","D3_clean_spells")
+listdatasets <- c("D3_bleeding_events","D3_source_population","D3_clean_spells","D3_PERSONS")
 
 # dates variables 
 
 listdates <- list()
 listdates[["D3_bleeding_events"]] <- "date"
-listdates[["D3_source_population"]] <- c("birthdate", "entry_cohort","exit_cohort")
+listdates[["D3_source_population"]] <- c("birth_date", "entry_cohort","exit_cohort")
+listdates[["D3_PERSONS"]] <- c("birth_date", "death_date")
+
 listdates[["D3_clean_spells"]] <- c("entry_spell_category","exit_spell_category")
 
 # date baseline
