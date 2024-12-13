@@ -154,6 +154,7 @@ fit_models <- function(data) {
     fit_periodo_narrow <- summary(glm(cbind(event_narrow, n_emor_narrow) ~ period, family = binomial, data = data)),
     fit_periodo_broad <- summary(glm(cbind(event_broad, n_emor_broad) ~ period, family = binomial, data = data)),
     # stagionalità (considero un df per stagione, 4 all'anno, dove df = numero di nodi interni + 1)
+    # se usassi una natural spline ns, terrei conto allo stesso tempo di trend e stagionalità mentr con pbs riesco ad isolare la stagionalità
     fit_per_stag_narrow <- summary(glm(cbind(event_narrow, n_emor_narrow) ~ pbs(month, df = 4) + period, family = binomial, data = data)),
     fit_per_stag_broad <- summary(glm(cbind(event_broad, n_emor_broad) ~ pbs(month, df = 4) + period, family = binomial, data = data)),
     # trend e stagionalità (con pbs)
@@ -169,86 +170,25 @@ save(model_results, file = file.path(thisdiroutput,"model_results.rda"))
 
 # analysis with individual as unit ----
 
+model_results_indiv <- list(
+  
+  fit_indiv_narrow_mixed <- glmer(outcome_DEATH ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input),
+  fit_indiv_narrow_fixed <- glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input),
+  robust_se_cluster <- coeftest(fit_indiv_narrow_fixed, vcov = vcovCL(fit_indiv_narrow_fixed, cluster = input$person_id[which(input$type_bleeding=="narrow")])),
+  fit_indiv_narrow_mixed_agecat <- glmer(outcome_DEATH ~ period + ageband + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input),
+  fit_indiv_narrow_fixed_agecat <- glm(outcome_DEATH ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input),
+  robust_se_cluster <- coeftest(fit_indiv_narrow_fixed_agecat, vcov = vcovCL(fit_indiv_narrow_fixed_agecat, cluster = input$person_id[which(input$type_bleeding=="narrow")]))
+)
 
-fit_indiv_narrow <- summary(glmer(outcome_DEATH ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input))
+names(model_results_indiv) <- c("Effetti misti con età in continuo - Caso narrow",
+                                "Effetti fissi con età in continuo - Caso narrow",
+                                "Effetti fissi con età in continuo e SE robusti - Caso narrow",
+                                "Effetti misti con età categorica - Caso narrow",
+                                "Effetti fissi con età categorica - Caso narrow",
+                                "Effetti fissi con età categorica e SE robusti - Caso narrow")
 
-save(fit_indiv_narrow, file = file.path(thisdiroutput,"fit_indiv_narrow.rda"))
+save(model_results_indiv, file = file.path(thisdiroutput,"model_results_indiv.rda"))
 
-# fit_models_indiv <- function(data) {
-#   
-#      data <- data %>%
-#         mutate(period = factor(period))
-# 
-#     fit3 <- glmer(n_emor_narrow ~ period + age + gender + (1|person_id), family = binomial, data = data)
-# 
-# }
-# 
-# model_results_indiv <- map(results_updated, fit_models_indiv)
-
-
-
-# death <- input %>%
-#            group_by(time) %>% 
-#            summarise(event = sum(outcome_DEATH)) %>% 
-#            mutate(period = case_when(time <= 26 | (time > 42 & time <= 44) ~ 1,
-#                                      time > 26 & time <= 42 ~ 2,
-#                                      time > 44 & time <= 67 ~ 3,
-#                                      time > 67 ~ 4),
-#                   year = cut(time, breaks = seq(1,96, by = 12), labels = c(2018:2024), right = FALSE)) %>%
-#            relocate(year, .before = time) 
-# 
-# death <- death %>% 
-#            bind_rows(fix_time %>% select(-month) %>% anti_join(death, by = c("year", "time", "period"))) %>% 
-#            group_by(year) %>% 
-#            mutate(month = 1:12) %>% 
-#            relocate(month, .after = year)
-# 
-# 
-# death <- death %>% 
-#            left_join(den, by = "time") %>% 
-#            mutate(prop = event/n_emor)
-
-    
-
-# # grafico
-# plot(death$time, death$event)
-# plot(results_updated[["outcome_AMI"]]$time, results_updated[["outcome_AMI"]]$prop_broad)
-# hist(results_updated[["outcome_AMI"]]$prop_broad)
-
-# # assumo dati indipendenti per l'outcome death, non potendosi ripetere
-# death <- death %>% 
-#            mutate(period = factor(period))
-# fit1 <- glm(event ~ time + period, family = poisson, data = death)
-# summary(fit1)
-# 
-# # gestisco la stagionalità inserendo una spline (tengo conto allo stesso tempo di trend e stagionalità con la ns)
-# death <- death %>% 
-#            mutate(period = factor(period))
-# fit2 <- glm(event ~ ns(time, df = 21) + period, family = poisson, data = death)
-# summary(fit2)
-
-# # confronto AIC
-# aic_values <- AIC(fit1, fit2)
-
-# # periodo
-# fit_periodo_narrow <- glm(cbind(event_narrow, n_emor_narrow) ~ period, family = binomial, data = death)
-# fit_periodo_broad <- glm(cbind(event_broad, n_emor_broad) ~ period, family = binomial, data = death)
-# # stagionalità (considero un df per stagione, 4 all'anno, dove df = numero di nodi interni + 1)
-# fit_per_stag_narrow <- glm(cbind(event_narrow, n_emor_narrow) ~ pbs(month, df = 4) + period, family = binomial, data = death)
-# fit_per_stag_broad <- glm(cbind(event_broad, n_emor_broad) ~ pbs(month, df = 4) + period, family = binomial, data = death)
-# # trend e stagionalità (con pbs)
-# fit_per_stag_trend_narrow <- glm(cbind(event_narrow, n_emor_narrow) ~ pbs(month, df = 4) + time + period, family = binomial, data = death)
-# fit_per_stag_trend_broad <- glm(cbind(event_broad, n_emor_broad) ~ pbs(month, df = 4) + time + period, family = binomial, data = death)
-
-# hist(death$rate)
-
-# summary(fit6)
-
-# confronto AIC
-# aic_values <- AIC(fit3, fit4, fit5, fit2)
-
-# # per gli altri outcome non assumo dati indipendenti perchè i soggetti possono rientrare
-# fit3 <- glmer(event ~ time + period + (1|person_id), family = binomial, data = x)
 
 # processing <- ...
   
