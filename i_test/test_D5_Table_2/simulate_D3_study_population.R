@@ -70,28 +70,28 @@ agebands <- c("0","18","40","60","80")
 data[, ageband := sample(agebands, df_size, replace = TRUE, prob = c(.001,.01,.2,.4, 1 - (.001 + .01 + .2 + .4)))]
 data[, ageband := as.factor(ageband)]
 
-# date_bleeding
+# date
 
 set.seed(5243)
-data[, date_bleeding := round(runif(.N, min = 0, max = 6.5 * 365))]
-data[,date_bleeding := as.Date(ymd(20180101) + date_bleeding)]
+data[, date := round(runif(.N, min = 0, max = as.numeric(study_end_date - study_start_date)))]
+data[,date := as.Date(ymd(study_start_date) + date)]
 
 # period
 
 
 data[, period := NA_character_]
-data[date_bleeding <= end_date_period[["1a"]], period := "1a"]
-data[is.na(period) & date_bleeding <= end_date_period[["1b"]], period := "1b"]
-data[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
-data[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
+data[date <= end_date_period[["1a"]], period := "1a"]
+data[is.na(period) & date <= end_date_period[["1b"]], period := "1b"]
+data[is.na(period) & date <= end_date_period[["1c"]], period := "1c"]
+data[is.na(period) & date <= end_date_period[["2"]], period := "2"]
 data[is.na(period),  period := "3"]  
 
-# type_bleeding
+# event
 
 set.seed(7243)
 data[, narrow := fifelse(runif(.N, min = 0, max = 1) > .6, 1, 0 )]
 
-data[, type_bleeding := fifelse(narrow == 1, "narrow", "possible" )]
+data[, event := fifelse(narrow == 1, "bleeding_narrow", "bleeding_possible" )]
 
 ###########
 # covariates
@@ -128,17 +128,18 @@ for (j in 1:26) {
 # add few duplicate cases
 
 set.seed(457378)
-datan <- data[ runif(.N) > .98 ,]
+datan <- copy(data)[ runif(.N) > .98 ,]
 
-datan[, date_bleeding := date_bleeding + round(runif(1, min = 50, max = 500))]
+datan[, date := date + round(runif(1, min = 50, max = 500))]
 
 seedout <- 34566
 set.seed(seedout)
 
-datan[date_bleeding <= end_date_period[["1a"]], period := "1a"]
-datan[is.na(period) & date_bleeding <= end_date_period[["1b"]], period := "1b"]
-datan[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
-datan[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
+datan[, period := NA_character_]
+datan[date <= end_date_period[["1a"]], period := "1a"]
+datan[is.na(period) & date <= end_date_period[["1b"]], period := "1b"]
+datan[is.na(period) & date <= end_date_period[["1c"]], period := "1c"]
+datan[is.na(period) & date <= end_date_period[["2"]], period := "2"]
 datan[is.na(period),  period := "3"]  
 
 
@@ -159,9 +160,11 @@ data[, age := {
 }, by = ageband]
 
 
+setnames(data,"date","date_bleeding")
+
 # append and clean
 
-tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", paste0("covariate_",as.character(1:26)))
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "event", "period", paste0("covariate_",as.character(1:26)))
 
 data <- data[, ..tokeep]
 

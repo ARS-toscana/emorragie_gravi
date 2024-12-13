@@ -47,10 +47,6 @@ processing[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2
 processing[is.na(period) & date_bleeding <= end_date_period[["3"]],  period := "3"]
 processing <- processing[!is.na(period),]
 
-# age
-
-processing[, age := age_fast(birth_date,date_bleeding)]
-
 # outcome
 
 processing[,outcome_DEATH := fifelse(!is.na(death_date) & death_date >= date_bleeding & death_date <= end_followup_d,1,0)]
@@ -58,7 +54,7 @@ processing[,outcome_DEATH := fifelse(!is.na(death_date) & death_date >= date_ble
 ################################
 # clean
 
-tokeep <- c("person_id","gender","age","date_bleeding","type_bleeding","period","outcome_DEATH" )
+tokeep <- c("person_id","gender","age","ageband","date_bleeding","type_bleeding","period","outcome_DEATH" )
 
 processing <- processing[, ..tokeep]
 

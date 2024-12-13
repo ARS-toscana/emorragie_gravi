@@ -28,6 +28,7 @@ source(paste0(thisdir,"/p_parameters/1_parameters_program.R"))
 source(paste0(thisdir,"/p_parameters/2_parameters_CDM.R"))
 source(paste0(thisdir,"/p_parameters/3_concept_sets.R"))
 source(paste0(thisdir,"/p_parameters/6_parameters_study.R"))
+source(paste0(thisdir,"/p_parameters/7_parameters_postprocessing.R"))
 
 TEST <- T
 
@@ -50,9 +51,15 @@ source(paste0(thisdir,"/p_steps/06_T2_20_create_study_population.R"))
 source(paste0(thisdir,"/p_steps/07_T3_10_create_persontime_bleeding.R"))
 source(paste0(thisdir,"/p_steps/07_T3_20_apply_Cube_to_persontime_bleeding.R"))
 source(paste0(thisdir,"/p_steps/07_T3_30_create_analytical_dataset.R"))
+source(paste0(thisdir,"/p_steps/07_T3_35_apply_Cube_to_study_outcomes.R"))
+
+source(paste0(thisdir,"/p_steps/08_T4_20_create_D5_Table_2.R"))
+source(paste0(thisdir,"/p_steps/08_T4_25_create_D5_dispensings_AA.R"))
 source(paste0(thisdir,"/p_steps/08_T4_30_create_D5_IR.R"))
+source(paste0(thisdir,"/p_steps/08_T4_35_create_D5_Table_3_study_outcomes.R"))
 source(paste0(thisdir,"/p_steps/08_T4_40_analysis.R"))
 
+source(paste0(thisdir,"/p_steps/09_T5_20_create_D6_Table_2.R"))
 source(paste0(thisdir,"/p_steps/09_T5_35_create_Figure_1.R"))
 source(paste0(thisdir,"/p_steps/09_T5_45_create_Figure_2.R"))
 
