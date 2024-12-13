@@ -59,7 +59,7 @@ read_library <- function(...) {
 
 list.of.packages <- c("MASS", "haven", "tidyverse", "lubridate", "AdhereR", "stringr", "purrr", "readr", "dplyr",
                       "survival", "rmarkdown", "ggplot2","scales", "data.table", "qpdf", "parallel", "readxl", "gtsummary",
-                      "labelled", "huxtable", "metafor", "markdown", "R.utils", "RcppAlgos", "qs","zoo","knitr", "kableExtra", "officer", "writexl","pdftools","png","grid","gridExtra","cowplot", "bit64", "splines", "pbs", "lme4", "Matrix", "clubSandwich", "lmtest")
+                      "labelled", "huxtable", "metafor", "markdown", "R.utils", "RcppAlgos", "qs","zoo","knitr", "kableExtra", "officer", "writexl","pdftools","png","grid","gridExtra","cowplot", "bit64", "splines", "pbs", "lme4", "Matrix", "clubSandwich", "lmtest", "sandwich")
 
 
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
