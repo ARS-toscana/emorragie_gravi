@@ -1,7 +1,7 @@
 rm(list=ls(all.names=TRUE))
 
 
-baselinedate <- 20190101
+baselinedate <- 20180101
 
 
 #set the directory where the script is saved as the working directory
@@ -19,7 +19,7 @@ library(lubridate)
 
 listdatasetsRData <- c("bleeding_narrow")
 
-listdatasets <- c(listdatasetsRData)
+listdatasets <- c(listdatasetsRData,"D4_persons_with_MoI")
 
 # dates variables 
 

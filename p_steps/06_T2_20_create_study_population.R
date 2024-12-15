@@ -7,6 +7,9 @@
 
 # author: Rosa Gini
 
+# v 1.2 15 Dec 2024
+
+# add number of previous bleedings
 
 # v 1.1 11 Dec 2024
 
@@ -35,23 +38,43 @@ obsperiods <- readRDS(file.path(thisdirinput, "D3_clean_spells.rds"))
 obsperiods <- obsperiods[is_the_study_spell == 1,]
 persons <- readRDS(file.path(thisdirinput, "D3_PERSONS.rds"))
 
-# process: cohort is excluding already 30 days after all events, plus, limit entry until the end of the study period
+# process
+
+# limit events to those happening when the person is in the source population
 
 processing <- merge(cohort,events, by = "person_id", all = F)
 processing <- processing[date >= entry_cohort & date <= exit_cohort,]
 
+# rename date
+
+setnames(processing,"date","date_bleeding")
+
 # remove cases that happen outside of the study period
 
-processing <- processing[ date >= study_start_date & date <= study_end_date,]
+processing <- processing[ date_bleeding >= study_start_date & date_bleeding <= study_end_date,]
+
+# count previous bleedings
+
+temp <- merge(processing[,.(person_id,date_bleeding)],events, by = "person_id", all = F, allow.cartesian = T)
+
+temp <- temp[date < date_bleeding,]
+
+temp[, dist := as.integer(date_bleeding - date)]
+
+temp <- temp[,.(number_previous_bleedings = .N, days_since_most_recent_bleeding = min(dist)), by = .(person_id,date_bleeding)]
+
+processing <- merge(processing,temp, by = c("person_id","date_bleeding"), all.x = T)
+
+processing <- processing[is.na(number_previous_bleedings), number_previous_bleedings:= 0 ]
 
 # period
 
 processing[, period := NA_character_]
-processing[is.na(period) & date <= end_date_period[["1a"]], period := "1a"]
-processing[is.na(period) & date <= end_date_period[["1b"]], period := "1b"]
-processing[is.na(period) & date <= end_date_period[["1c"]], period := "1c"]
-processing[is.na(period) & date <= end_date_period[["2"]], period := "2"]
-processing[is.na(period) & date <= end_date_period[["3"]],  period := "3"]
+processing[is.na(period) & date_bleeding <= end_date_period[["1a"]], period := "1a"]
+processing[is.na(period) & date_bleeding <= end_date_period[["1b"]], period := "1b"]
+processing[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
+processing[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
+processing[is.na(period) & date_bleeding <= end_date_period[["3"]],  period := "3"]
 processing <- processing[!is.na(period),]
 
 
@@ -61,7 +84,7 @@ processing <- processing[!is.na(period),]
 # remove cases that happen outside of the observation period
 
 processing <- merge(processing,obsperiods[,.(person_id,entry_spell_category, exit_spell_category)], by = "person_id", all = F)
-processing <- processing[date >= entry_spell_category & date <= exit_spell_category,]
+processing <- processing[date_bleeding >= entry_spell_category & date_bleeding <= exit_spell_category,]
 
 # add death
 
@@ -69,7 +92,7 @@ processing <- merge(processing,persons[,.(person_id,death_date)], by = "person_i
 
 # age
 
-processing[, age := age_fast(birth_date,date)]
+processing[, age := age_fast(birth_date,date_bleeding)]
 
 #ageband
 
@@ -84,15 +107,14 @@ processing[, ageband := cut(age,
 
 # time of end of follow up (never used)
 
-processing[, end_followup_d := pmin(exit_spell_category, date + 30)]
+processing[, end_followup_d := pmin(exit_spell_category, date_bleeding + 30)]
 
-setnames(processing,"date","date_bleeding")
 
 
 ################################
 # clean
 
-tokeep <- c("person_id","birth_date","gender","age","ageband","death_date","period","date_bleeding","event","end_followup_d")
+tokeep <- c("person_id","birth_date","gender","age","ageband","death_date","period","date_bleeding","event","end_followup_d","number_previous_bleedings","days_since_most_recent_bleeding")
 
 processing <- processing[, ..tokeep]
 

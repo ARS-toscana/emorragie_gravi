@@ -36,6 +36,10 @@ processing<- merge(processing,persons[,not_in_registry := 0], all.x = T, by = "p
 processing <- processing[is.na(not_in_registry), not_in_registry := 1]
 processing <- processing[, no_gender_or_birthdate := fifelse(not_in_registry == 1 | is.na(gender) | is.na(birth_date),1,0)]
 
+# select episodes that overlap the study period
+episodes <- episodes[start_date <= study_end_date & end_date >= study_start_date,]
+
+# keep only persons who have an episode overlapping the study period
 persons_with_episode <- unique(episodes[,.(person_id)])
 persons_with_episode[,no_episode_of_treatment_overlapping_the_study_observation_period := 0]
 processing <- merge(processing,persons_with_episode, all.x = T, by = "person_id")

@@ -1,5 +1,7 @@
 rm(list=ls(all.names=TRUE))
 
+baselinedate <- 20180101
+
 #set the directory where the script is saved as the working directory
 if (!require("rstudioapi")) install.packages("rstudioapi")
 thisdir <- setwd(dirname(rstudioapi::getSourceEditorContext()$path))
@@ -20,14 +22,14 @@ listdatasets <- c("D3_episodes_of_treatment","D3_PERSONS","D3_dispensings_DOACs"
 listdates <- list()
 listdates[["D3_dispensings_DOACs"]] <- c("date")
 listdates[["D3_episodes_of_treatment"]] <- c("start_date","end_date")
-listdates[["D3_PERSONS"]] <- c("birthdate")
+listdates[["D3_PERSONS"]] <- c("birth_date","death_date")
 
 # date baseline
 
 baseline <- vector(mode="list")
 for (namedataset in listdatasets) {
   for (datevar in listdates[[namedataset]]) {
-    baseline[[namedataset]][[datevar]] <- as.Date(lubridate::ymd(20150101))
+    baseline[[namedataset]][[datevar]] <- as.Date(lubridate::ymd(baselinedate))
   }
 }
 

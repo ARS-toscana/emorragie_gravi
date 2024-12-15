@@ -11,7 +11,7 @@ library(data.table)
 if (!require("lubridate")) install.packages("lubridate")
 library(lubridate)
 
-datebaseline <- "20190101"
+datebaseline <- "20180101"
 
 # list of datasets
 

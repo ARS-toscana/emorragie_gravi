@@ -1,0 +1,13 @@
+Periodo,Tipo di sanguinamento,N,Decesso
+"No antidoto, prima delle restrizioni Covid",broad,996,123 (12.3%)
+"No antidoto, durante le restrizioni Covid",broad,574,91 (15.9%)
+"No antidoto, dopo le restrizioni Covid",broad,132,18 (13.6%)
+"Antidoto disponibile, prima delle linee guida",broad,1094,155 (14.2%)
+"Antidoto disponibile, dopo le linee guida",broad,235,32 (13.6%)
+Totale,broad,3031,419 (13.8%)
+"No antidoto, prima delle restrizioni Covid",narrow,449,79 (17.6%)
+"No antidoto, durante le restrizioni Covid",narrow,264,61 (23.1%)
+"No antidoto, dopo le restrizioni Covid",narrow,76,15 (19.7%)
+"Antidoto disponibile, prima delle linee guida",narrow,471,107 (22.7%)
+"Antidoto disponibile, dopo le linee guida",narrow,106,21 (19.8%)
+Totale,narrow,1366,283 (20.7%)

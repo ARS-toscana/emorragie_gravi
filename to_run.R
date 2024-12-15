@@ -60,6 +60,7 @@ source(paste0(thisdir,"/p_steps/08_T4_35_create_D5_Table_3_study_outcomes.R"))
 source(paste0(thisdir,"/p_steps/08_T4_40_analysis.R"))
 
 source(paste0(thisdir,"/p_steps/09_T5_20_create_D6_Table_2.R"))
+source(paste0(thisdir,"/p_steps/09_T5_30_create_D6_Table_3_study_outcomes.R"))
 source(paste0(thisdir,"/p_steps/09_T5_35_create_Figure_1.R"))
 source(paste0(thisdir,"/p_steps/09_T5_45_create_Figure_2.R"))
 

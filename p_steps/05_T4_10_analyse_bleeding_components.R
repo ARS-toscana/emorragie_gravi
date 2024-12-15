@@ -136,11 +136,11 @@ setnames(processing, c("PROP_", "PROP_L", "PROP_R", "PROP_10", "PROP_11", "PROP_
 #########################################
 # save
 
-outputfile <- processing
-
-nameoutput <- "D3_bleeding_components"
-nameoutputext <- paste0(nameoutput,".rds")
-assign(nameoutput, outputfile)
-saveRDS(outputfile, file = file.path(thisdiroutput, nameoutputext))
-
-
+# outputfile <- processing
+# 
+# nameoutput <- "D3_bleeding_components"
+# nameoutputext <- paste0(nameoutput,".rds")
+# assign(nameoutput, outputfile)
+# saveRDS(outputfile, file = file.path(thisdiroutput, nameoutputext))
+# 
+# 
