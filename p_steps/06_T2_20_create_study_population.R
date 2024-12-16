@@ -7,6 +7,11 @@
 
 # author: Rosa Gini
 
+# v 1.3 16 Dec 2024
+
+# aggregated 2+ number of previous bleedings, restricted to previous 3 years
+
+
 # v 1.2 15 Dec 2024
 
 # add number of previous bleedings
@@ -49,7 +54,7 @@ processing <- processing[date >= entry_cohort & date <= exit_cohort,]
 
 setnames(processing,"date","date_bleeding")
 
-# remove cases that happen outside of the study period
+# remove cases that happen outside of the periods when the person is in the source population
 
 processing <- processing[ date_bleeding >= study_start_date & date_bleeding <= study_end_date,]
 
@@ -57,11 +62,13 @@ processing <- processing[ date_bleeding >= study_start_date & date_bleeding <= s
 
 temp <- merge(processing[,.(person_id,date_bleeding)],events, by = "person_id", all = F, allow.cartesian = T)
 
-temp <- temp[date < date_bleeding,]
+temp <- temp[date < date_bleeding & date >= date_bleeding - 3 * 365,]
 
 temp[, dist := as.integer(date_bleeding - date)]
 
 temp <- temp[,.(number_previous_bleedings = .N, days_since_most_recent_bleeding = min(dist)), by = .(person_id,date_bleeding)]
+
+temp <- temp[ number_previous_bleedings > 2,number_previous_bleedings := 2] 
 
 processing <- merge(processing,temp, by = c("person_id","date_bleeding"), all.x = T)
 

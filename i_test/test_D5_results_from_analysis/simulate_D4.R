@@ -45,7 +45,7 @@ namedataset <- "D4_analytical_dataset"
 
 # set size of the dataset
 
-df_size <- 10000
+df_size <- 4000
 
 # create base 
 data <- data.table::data.table(episode_id = 1:df_size #, 
@@ -220,6 +220,7 @@ summary_table <- data.frame(
 )
 print(summary_table)
 
+
 # outcome_DEATH (competitive with "outcome_AMI", "outcome_IS", "outcome_TIA")
 
 seedout <- 65783
@@ -244,12 +245,27 @@ for (outcomet in c("outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "o
   j <- j + 1
 }
 
+
+# outcome_THROM
+
+data[, outcome_THROM := pmax(outcome_AMI, outcome_IS, outcome_VTE, outcome_TIA, outcome_PE)]
+
+# number of previous bleedings
+
+data[, number_previous_bleedings := 0]
+
+
 # add few duplicate cases
 
 set.seed(457378)
 datan <- data[ runif(.N) > .98 & outcome_DEATH == 0,]
 
-datan[, date_bleeding := date_bleeding + round(runif(1, min = 50, max = 500))]
+datan[, date_bleeding_new := date_bleeding + round(runif(1, min = 50, max = 500))]
+
+datan[, days_since_most_recent_bleeding := as.integer(date_bleeding_new - date_bleeding)]
+
+datan[,date_bleeding := NULL]
+setnames(datan,"date_bleeding_new","date_bleeding")
 
 seedout <- 34566
 set.seed(seedout)
@@ -261,8 +277,18 @@ datan[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
 datan[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
 datan[is.na(period),  period := "3"]  
 
+datan[, number_previous_bleedings := 1]
 
-data <- rbind(data,datan)
+data <- rbind(data,datan, fill = T)
+
+# some other cases have past episodes
+
+seedout <- 34561
+set.seed(seedout)
+data[, number_previous_bleedings := fifelse (runif(.N) > .98,number_previous_bleedings + 1, number_previous_bleedings)]
+
+
+# episode_id
 
 data[,episode_id := seq_len(.N)]
 
@@ -281,7 +307,7 @@ data[, age := {
 
 # append and clean
 
-tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_DEATH", paste0("covariate_",as.character(1:26)))
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH", paste0("covariate_",as.character(1:26)))
 
 data <- data[, ..tokeep]
 
