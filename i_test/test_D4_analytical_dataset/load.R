@@ -15,12 +15,12 @@ baselinedate <- 20190101
 
 # list of datasets
 
-listdatasets <- c("D3_study_population")
+listdatasets <- c("D3_study_population","D3_study_outcomes")
 
 # dates variables 
 
 listdates <- list()
-listdates[["D3_bleeding_events"]] <- "date"
+listdates[["D3_study_outcomes"]] <- "date"
 listdates[["D3_study_population"]] <- c("birth_date", "death_date","date_bleeding","end_followup_d")
 
 # date baseline

@@ -35,6 +35,13 @@ if (TEST){
 
 input <- readRDS(file.path(thisdirinput, "D4_analytical_dataset.rds"))
 
+# 
+Agebands_analysis = c(0, 59, 64, 69, 74, 79, 84, 89)
+Agebands_analysis_labels <- c("0-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90+")
+
+names(Agebands_analysis) <- Agebands_analysis_labels
+
+
 # analysis
 input <- input %>% 
            mutate(time = as.numeric(ceiling((date_bleeding - as.Date("2018-01-01"))/30)),

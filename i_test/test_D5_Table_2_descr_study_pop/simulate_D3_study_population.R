@@ -76,16 +76,18 @@ set.seed(5243)
 data[, date := round(runif(.N, min = 0, max = as.numeric(study_end_date - study_start_date)))]
 data[,date := as.Date(ymd(study_start_date) + date)]
 
+setnames(data,"date","date_bleeding")
+
+
 # period
 
 
 data[, period := NA_character_]
-data[date <= end_date_period[["1a"]], period := "1a"]
-data[is.na(period) & date <= end_date_period[["1b"]], period := "1b"]
-data[is.na(period) & date <= end_date_period[["1c"]], period := "1c"]
-data[is.na(period) & date <= end_date_period[["2"]], period := "2"]
+data[date_bleeding <= end_date_period[["1a"]], period := "1a"]
+data[is.na(period) & date_bleeding <= end_date_period[["1b"]], period := "1b"]
+data[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
+data[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
 data[is.na(period),  period := "3"]  
-
 # event
 
 set.seed(7243)
@@ -125,28 +127,41 @@ for (j in 1:26) {
   setnames(data,"cov",paste0("covariate_",j))
 }
 
+# number of previous bleedings
+
+data[, number_previous_bleedings := 0]
+
+
 # add few duplicate cases
 
 set.seed(457378)
-datan <- copy(data)[ runif(.N) > .98 ,]
+datan <- data[ runif(.N) > .98 ,]
 
-datan[, date := date + round(runif(1, min = 50, max = 500))]
+datan[, date_bleeding_new := date_bleeding + round(runif(1, min = 50, max = 500))]
 
-seedout <- 34566
-set.seed(seedout)
+datan[, days_since_most_recent_bleeding := as.integer(date_bleeding_new - date_bleeding)]
+
+datan[,date_bleeding := NULL]
+setnames(datan,"date_bleeding_new","date_bleeding")
 
 datan[, period := NA_character_]
-datan[date <= end_date_period[["1a"]], period := "1a"]
-datan[is.na(period) & date <= end_date_period[["1b"]], period := "1b"]
-datan[is.na(period) & date <= end_date_period[["1c"]], period := "1c"]
-datan[is.na(period) & date <= end_date_period[["2"]], period := "2"]
+datan[date_bleeding <= end_date_period[["1a"]], period := "1a"]
+datan[is.na(period) & date_bleeding <= end_date_period[["1b"]], period := "1b"]
+datan[is.na(period) & date_bleeding <= end_date_period[["1c"]], period := "1c"]
+datan[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2"]
 datan[is.na(period),  period := "3"]  
 
+datan[, number_previous_bleedings := 1]
 
-data <- rbind(data,datan)
+data <- rbind(data,datan, fill = T)
 
-data[,episode_id := seq_len(.N)]
+# some other cases have past episodes
 
+seedout <- 34561
+set.seed(seedout)
+data[, number_previous_bleedings := fifelse (runif(.N) > .98,number_previous_bleedings + 1, number_previous_bleedings)]
+
+data <- data[number_previous_bleedings > 0 & is.na(days_since_most_recent_bleeding), days_since_most_recent_bleeding := 500]
 
 # define age
 
@@ -160,11 +175,10 @@ data[, age := {
 }, by = ageband]
 
 
-setnames(data,"date","date_bleeding")
 
 # append and clean
 
-tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "event", "period", paste0("covariate_",as.character(1:26)))
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "event", "period", "number_previous_bleedings", "days_since_most_recent_bleeding", paste0("covariate_",as.character(1:26)))
 
 data <- data[, ..tokeep]
 

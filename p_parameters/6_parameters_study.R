@@ -41,10 +41,9 @@ days <- 365
 
 # agebands
 
-# Agebands_countpersontime = c(0, 17, 39, 59 ,79)
-# Agebands_labels <- c("0-17", "18-39", "40-59", "60-79", "80+")
-Agebands_countpersontime = c(0, 59, 64, 69, 74, 79, 84, 89)
-Agebands_labels <- c("0-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90+")
+Agebands_countpersontime = c(0, 17, 39, 59 ,79)
+Agebands_labels <- c("0-17", "18-39", "40-59", "60-79", "80+")
+
 names(Agebands_countpersontime) <- Agebands_labels
 
 Agebands_large = c(0, 18, 60)

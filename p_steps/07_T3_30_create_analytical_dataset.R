@@ -7,6 +7,10 @@
 
 # author: Rosa Gini
 
+# v 0.9 16 Dec 2024
+
+# add all outcomes
+
 # v 0.2 10 Dec 2024
 
 # restrict to study period
@@ -29,6 +33,7 @@ if (TEST){
 # import input datasets
 
 processing <- readRDS(file.path(thisdirinput, "D3_study_population.rds"))
+outcomes <- readRDS(file.path(thisdirinput, "D3_study_outcomes.rds"))
 
 
 # set names
@@ -47,14 +52,62 @@ processing[is.na(period) & date_bleeding <= end_date_period[["2"]], period := "2
 processing[is.na(period) & date_bleeding <= end_date_period[["3"]],  period := "3"]
 processing <- processing[!is.na(period),]
 
-# outcome
+# outcome death
 
 processing[,outcome_DEATH := fifelse(!is.na(death_date) & death_date >= date_bleeding & death_date <= end_followup_d,1,0)]
+
+# other outcomes
+
+temp <- merge(processing[,.(person_id,date_bleeding)],outcomes,by = "person_id", all = F)
+temp <- temp[date >= date_bleeding & date <= date_bleeding + 30,]
+temp <- unique(temp[,.(person_id,date_bleeding,event)])
+temp <- dcast(temp, person_id + date_bleeding ~ event, 
+                   fun.aggregate = length, 
+                   value.var = "event")
+
+listconceptsets <- c("AMI", "IS", "VTE", "TIA", "PE", "DIC")
+
+for (concept_id in listconceptsets) {
+  if (concept_id %in% names(temp)) {
+    setnames(temp,concept_id,"vartemp")
+    temp <- temp[is.na(vartemp), vartemp := 0]
+    setnames(temp,"vartemp",paste0("outcome_",concept_id))
+    
+  }else{
+    temp[,(paste0("outcome_",concept_id)) := 0]
+  }
+}
+
+processing <- merge(processing,temp, by = c("person_id","date_bleeding"), all.x = T)
+
+for (concept_id in listconceptsets) {
+    setnames(processing,paste0("outcome_",concept_id),"vartemp")
+    processing <- processing[is.na(vartemp), vartemp := 0]
+    setnames(processing,"vartemp",paste0("outcome_",concept_id))
+}
+
+# thombotic
+
+processing[, outcome_THROM := pmax(outcome_AMI, outcome_IS, outcome_VTE, outcome_TIA, outcome_PE)]
+
+
+# episode_id
+
+setorderv(
+  processing,
+  c("person_id", "date_bleeding")
+)
+
+processing[,episode_id := seq_len(.N)]
+
 
 ################################
 # clean
 
-tokeep <- c("person_id","gender","age","ageband","date_bleeding","type_bleeding","period","outcome_DEATH" )
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH", paste0("covariate_",as.character(1:26)))
+
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH")
+
 
 processing <- processing[, ..tokeep]
 
