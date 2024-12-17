@@ -226,6 +226,11 @@ seedout <- 65783
 set.seed(seedout)
 data[, outcome_DEATH := as.integer(runif(.N) < prob)]
 
+seedout <- 157831
+set.seed(seedout)
+data[, days_DEATH := round(rpois(.N, lambda = 2))] # rpois(.N, lambda = 5)
+data[, days_DEATH := pmin(days_DEATH, 30)]
+
 # competitive outcome
 
 data[, b := b + log(.8) * outcome_DEATH]
@@ -281,7 +286,7 @@ data[, age := {
 
 # append and clean
 
-tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_DEATH", paste0("covariate_",as.character(1:26)))
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_DEATH", "days_DEATH", paste0("covariate_",as.character(1:26)))
 
 data <- data[, ..tokeep]
 

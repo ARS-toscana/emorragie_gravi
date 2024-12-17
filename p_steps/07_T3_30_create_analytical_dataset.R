@@ -7,6 +7,10 @@
 
 # author: Rosa Gini
 
+# v 0.91 17 Dec 2024
+
+# added distance between date bleeding and date of death
+
 # v 0.9 16 Dec 2024
 
 # add all outcomes
@@ -56,6 +60,11 @@ processing <- processing[!is.na(period),]
 
 processing[,outcome_DEATH := fifelse(!is.na(death_date) & death_date >= date_bleeding & death_date <= end_followup_d,1,0)]
 
+# distance
+
+processing <- processing[ outcome_DEATH == 1, days_DEATH := as.integer( death_date - date_bleeding)]
+
+
 # other outcomes
 
 temp <- merge(processing[,.(person_id,date_bleeding)],outcomes,by = "person_id", all = F)
@@ -90,6 +99,9 @@ for (concept_id in listconceptsets) {
 
 processing[, outcome_THROM := pmax(outcome_AMI, outcome_IS, outcome_VTE, outcome_TIA, outcome_PE)]
 
+# composite
+
+processing[, outcome_comp := pmax(outcome_THROM, outcome_DEATH)]
 
 # episode_id
 
@@ -104,9 +116,9 @@ processing[,episode_id := seq_len(.N)]
 ################################
 # clean
 
-tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH", paste0("covariate_",as.character(1:26)))
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH", "days_DEATH" ,"outcome_comp", paste0("covariate_",as.character(1:26)))
 
-tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH")
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH", "days_DEATH","outcome_comp")
 
 
 processing <- processing[, ..tokeep]
