@@ -31,16 +31,12 @@ if (TEST){
   thisdiroutput <- direxp
 }
 
+
+# save log file
+# sink(file="G:\\Drive condivisi\\USM\\ERSILIA\\EBM\\lavoro DISCONTINUATION bio (tuccori)\\disc_main_feb24_incidenti.txt")
+
 # import input datasets
-
 input <- readRDS(file.path(thisdirinput, "D4_analytical_dataset.rds"))
-
-# 
-Agebands_analysis = c(0, 59, 64, 69, 74, 79, 84, 89)
-Agebands_analysis_labels <- c("0-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90+")
-
-names(Agebands_analysis) <- Agebands_analysis_labels
-
 
 # analysis
 input <- input %>% 
@@ -194,35 +190,35 @@ save(model_results, file = file.path(thisdiroutput,"model_results.rda"))
 # create composite event
 
 input <- input %>% 
-           mutate(outcome_composite = case_when((outcome_DEATH==1 | outcome_THROM==1) ~ 1,
+           mutate(outcome_comp = case_when((outcome_DEATH==1 | outcome_THROM==1) ~ 1,
                                                 TRUE ~ 0))
 
 # analysis with individual as unit ----
 
-model_results_indiv <- list(
-  
-  fit_indiv_narrow_mixed <- summary(glmer(outcome_DEATH ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
-  fit_indiv_narrow_fixed <- summary(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
-  robust_se_cluster <- coeftest(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
-  fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_DEATH ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
-  fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_DEATH ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
-  robust_se_cluster <- coeftest(glm(outcome_DEATH ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_DEATH ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
-  
-  fit_indiv_narrow_mixed <- summary(glmer(outcome_THROM ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
-  fit_indiv_narrow_fixed <- summary(glm(outcome_THROM ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
-  robust_se_cluster <- coeftest(glm(outcome_THROM ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_THROM ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
-  fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_THROM ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
-  fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_THROM ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
-  robust_se_cluster <- coeftest(glm(outcome_THROM ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_THROM ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
-  
-  fit_indiv_narrow_mixed <- summary(glmer(outcome_composite ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
-  fit_indiv_narrow_fixed <- summary(glm(outcome_composite ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
-  robust_se_cluster <- coeftest(glm(outcome_composite ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
-  fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_composite ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
-  fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_composite ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
-  robust_se_cluster <- coeftest(glm(outcome_composite ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_DEATH ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
-)
-  
+# model_results_indiv <- list(
+#   
+#   fit_indiv_narrow_mixed <- summary(glmer(outcome_DEATH ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   fit_indiv_narrow_fixed <- summary(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   robust_se_cluster <- coeftest(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
+#   fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_DEATH ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_DEATH ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   robust_se_cluster <- coeftest(glm(outcome_DEATH ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_DEATH ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
+#   
+#   fit_indiv_narrow_mixed <- summary(glmer(outcome_THROM ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   fit_indiv_narrow_fixed <- summary(glm(outcome_THROM ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   robust_se_cluster <- coeftest(glm(outcome_THROM ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_THROM ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
+#   fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_THROM ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_THROM ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   robust_se_cluster <- coeftest(glm(outcome_THROM ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_THROM ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
+#   
+#   fit_indiv_narrow_mixed <- summary(glmer(outcome_composite ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   fit_indiv_narrow_fixed <- summary(glm(outcome_composite ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   robust_se_cluster <- coeftest(glm(outcome_composite ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
+#   fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_composite ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_composite ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input)),
+#   robust_se_cluster <- coeftest(glm(outcome_composite ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input), vcov = vcovCL(glm(outcome_DEATH ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input), cluster = input$person_id[which(input$type_bleeding=="narrow")])),
+# )
+#   
 
 # names(model_results_indiv) <- c("Effetti misti con età in continuo - Caso narrow",
 #                                 "Effetti fissi con età in continuo - Caso narrow",
@@ -231,7 +227,20 @@ model_results_indiv <- list(
 #                                 "Effetti fissi con età categorica - Caso narrow",
 #                                 "Effetti fissi con età categorica e SE robusti - Caso narrow")
 
-save(model_results_indiv, file = file.path(thisdiroutput,"model_results_indiv.rda"))
+# save(model_results_indiv, file = file.path(thisdiroutput,"model_results_indiv.rda"))
+
+# relevel age 
+input <- input %>% 
+  mutate(agebands_analysis = relevel(factor(agebands_analysis), "80-84")) 
+
+# rename exposure
+input <- input %>% 
+           mutate(period = factor(case_when(period == "1a" ~ "Senza antidoto pre COVID",
+                                     period == "1b" ~ "Senza antidoto con restrizioni",
+                                     period == "1c" ~ "Senza antidoto senza restrizioni",
+                                     period == "2" ~ "Con antidoto senza linee guida",
+                                     period == "3" ~ "Con antidoto con linee guida")))
+
 
 # Sensitivity analysis (considering only the first emorragic event per individual) ----
 
@@ -338,29 +347,204 @@ dev.off()
 model_results_sens <- map(results_sens_updated, fit_models)
 save(model_results_sens, file = file.path(thisdiroutput,"model_results_sens.rda"))
 
-# analysis with individual as unit ----
+# analysis with individual as unit, for both main and sensitivity analysis ----
 
-model_results_indiv_sens <- list(
+library(openxlsx)
+library(broom)
+library(broom.mixed)
+
+
+outcomes <- c("outcome_DEATH", "outcome_THROM", "outcome_comp")
+
+dataset_names <- c("input", "input_sens")
+
+# models_name <- c("Decesso_log_misure_rip_eta_cont", "Decesso_log_misure_rip_eta_cat",
+#                  "Tromb_log_misure_rip_eta_cont", "Tromb_log_misure_rip_eta_cat",
+#                  "Comp_log_misure_rip_eta_cont", "Comp_log_misure_rip_eta_cat")
+
+# models_fit <- list(
+#   
+#   "Decesso_mix_misure_rip_eta_cont" = function(data) glmer(outcome_DEATH ~ period + age + gender + (1|person_id), 
+#                                                              subset = type_bleeding == "narrow", 
+#                                                              family = binomial, data = data),
+#   "Decesso_mix_misure_rip_eta_cat" = function(data) glmer(outcome_DEATH ~ period + agebands_analysis + gender + (1|person_id), 
+#                                                             subset = type_bleeding == "narrow", 
+#                                                             family = binomial, data = data),
+#   "Decesso_log_misure_rip_eta_cont" = function(data) glm(outcome_DEATH ~ period + age + gender, 
+#                                                          subset = type_bleeding == "narrow", 
+#                                                          family = binomial, data = data),
+#   "Decesso_log_misure_rip_eta_cat" = function(data) glm(outcome_DEATH ~ period + agebands_analysis + gender, 
+#                                                         subset = type_bleeding == "narrow", 
+#                                                         family = binomial, data = data),
+#   
+#   "Tromb_log_misure_rip_eta_cont" = function(data) glm(outcome_THROM ~ period + age + gender, 
+#                                                          subset = type_bleeding == "narrow", 
+#                                                          family = binomial, data = data),
+#   "Tromb_log_misure_rip_eta_cat" = function(data) glm(outcome_THROM ~ period + agebands_analysis + gender, 
+#                                                         subset = type_bleeding == "narrow", 
+#                                                         family = binomial, data = data),
+#   
+#   "Comp_log_misure_rip_eta_cont" = function(data) glm(outcome_composite ~ period + age + gender, 
+#                                                          subset = type_bleeding == "narrow", 
+#                                                          family = binomial, data = data),
+#   "Comp_log_misure_rip_eta_cat" = function(data) glm(outcome_composite ~ period + agebands_analysis + gender, 
+#                                                         subset = type_bleeding == "narrow", 
+#                                                         family = binomial, data = data)
+#   
+# )
+
+models_definitions <- list(
+  "mix_eta_cont" = function(data, outcome) 
+    glmer(as.formula(paste(outcome, "~ period + age + gender + (1|person_id)")), 
+          subset = type_bleeding == "narrow", 
+          family = binomial, data = data),
   
-  fit_indiv_narrow_mixed <- summary(glmer(outcome_DEATH ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  fit_indiv_narrow_fixed <- summary(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_DEATH ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_DEATH ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+  "mix_eta_cat" = function(data, outcome) 
+    glmer(as.formula(paste(outcome, "~ period + agebands_analysis + gender + (1|person_id)")), 
+          subset = type_bleeding == "narrow", 
+          family = binomial, data = data),
   
-  fit_indiv_narrow_mixed <- summary(glmer(outcome_THROM ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  fit_indiv_narrow_fixed <- summary(glm(outcome_THROM ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_THROM ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_THROM ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+  "log_eta_cont" = function(data, outcome) 
+    glm(as.formula(paste(outcome, "~ period + age + gender")), 
+        subset = type_bleeding == "narrow", 
+        family = binomial, data = data),
   
-  fit_indiv_narrow_mixed <- summary(glmer(outcome_composite ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  fit_indiv_narrow_fixed <- summary(glm(outcome_composite ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  robust_se_cluster <- coeftest(glm(outcome_composite ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens), vcov = vcovCL(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens), cluster = input_sens$person_id[which(input_sens$type_bleeding=="narrow")])),
-  fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_composite ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_composite ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
-  robust_se_cluster <- coeftest(glm(outcome_composite ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens), vcov = vcovCL(glm(outcome_DEATH ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens), cluster = input_sens$person_id[which(input_sens$type_bleeding=="narrow")])),
+  "log_eta_cat" = function(data, outcome) 
+    glm(as.formula(paste(outcome, "~ period + agebands_analysis + gender")), 
+        subset = type_bleeding == "narrow", 
+        family = binomial, data = data),
   
+  "log_stag" = function(data, outcome) 
+    glm(as.formula(paste(outcome, "~ period + agebands_analysis + gender + pbs(month, df = 4)")), 
+        subset = type_bleeding == "narrow", 
+        family = binomial, data = data),
+  
+  "mix_stag" = function(data, outcome) 
+    glmer(as.formula(paste(outcome, "~ period + agebands_analysis + gender + pbs(month, df = 4) + (1|person_id)")), 
+          subset = type_bleeding == "narrow", 
+          family = binomial, data = data)
+
   
 )
+
+# names(models_fit) <- models_name
+
+# Ciclo per ciascun outcome
+for (i in outcomes) {
+  # Definisci il percorso del file Excel
+  out <- gsub("[^A-Za-z0-9]", "_", i)  # Rendi il nome del file sicuro
+  file_path <- file.path(thisdiroutput, paste0(out ,".xlsx"))
+  
+  # Carica o crea il workbook
+  if (file.exists(file_path)) {
+    wb <- loadWorkbook(file_path)
+  } else {
+    wb <- createWorkbook()
+  }
+  
+  
+  for (l in dataset_names) {
+    
+    # Nome del dataset da usare nel foglio
+    dataset <- get(l)
+    dataset_name <- ifelse(identical(dataset, input), "input", "input_sens")
+    
+  
+  
+  # Aggiungi un foglio per ogni modello
+  for (j in names(models_definitions)) {
+    sheet_name <- paste0(sub("^[^_]*_", "", out), "_", j, "_", l)
+    # Controlla se il foglio esiste già
+    if (!(sheet_name %in% names(wb))) {
+      addWorksheet(wb, sheet_name)
+    }
+    
+  #   # Scrivi i dati nel foglio
+  #   if (k %in% names(models_fit)) {
+  #     writeData(wb, sheet = k, x = models_fit[[k]])
+  #   }
+  # }
+    
+    # Ottieni il summary del modello
+    # model_summary <- broom::tidy(models_fit[[j]])
+    
+    # Prova a eseguire il modello
+    result <- tryCatch({
+    #   # Esegui il modello
+    #   model <- models_fit[[j]](input) 
+    #   # Se il modello funziona, scrivi il summary, verificando il tipo di modello
+    #   if (inherits(model, "glmerMod")) {
+    #     summary_table <- broom.mixed::tidy(model)
+    #   } else {
+    #     summary_table <- broom::tidy(model)
+    #   }
+    #   writeData(wb, sheet = j, x = summary_table)
+    #   NULL  # Nessun errore
+    # }, error = function(e) {
+    #   # Se c'è un errore, scrivi il messaggio nel foglio
+    #   writeData(wb, sheet = j, x = tibble(Error = e$message))
+    #   e$message  # Ritorna il messaggio d'errore
+    # })
+      
+      model <- models_definitions[[j]](input, i)  # Passa l'outcome dinamicamente
+      
+      # Verifica il tipo di modello per il tidy
+      if (inherits(model, "glmerMod")) {
+        summary_table <- broom.mixed::tidy(model)
+      } else {
+        summary_table <- broom::tidy(model)
+      }
+      
+      # Calcola BIC
+      bic_value <- BIC(model)
+      
+      # Scrivi l'output nel foglio
+      writeData(wb, sheet = sheet_name, x = summary_table)
+      
+      writeData(wb, sheet = sheet_name, x = tibble(BIC = bic_value), startCol = ncol(summary_table) + 1, startRow = 1)
+      
+      NULL
+    }, error = function(e) {
+      # Scrivi il messaggio d'errore se il modello fallisce
+      writeData(wb, sheet = sheet_name, x = tibble(Error = e$message))
+      e$message
+    })
+    
+    # Log per console (facoltativo)
+    if (!is.null(result)) {
+      message("Errore nel modello '", j, "' per outcome '", i, "': ", result)
+    }
+  }
+}
+  
+  # Salva il workbook
+  saveWorkbook(wb, file_path, overwrite = TRUE)
+}
+
+# close print log file
+# sink()
+
+# model_results_indiv_sens <- list(
+#   
+#   fit_indiv_narrow_mixed <- summary(glmer(outcome_DEATH ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   fit_indiv_narrow_fixed <- summary(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_DEATH ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_DEATH ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   
+#   fit_indiv_narrow_mixed <- summary(glmer(outcome_THROM ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   fit_indiv_narrow_fixed <- summary(glm(outcome_THROM ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_THROM ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_THROM ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   
+#   fit_indiv_narrow_mixed <- summary(glmer(outcome_composite ~ period + age + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   fit_indiv_narrow_fixed <- summary(glm(outcome_composite ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   robust_se_cluster <- coeftest(glm(outcome_composite ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens), vcov = vcovCL(glm(outcome_DEATH ~ period + age + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens), cluster = input_sens$person_id[which(input_sens$type_bleeding=="narrow")])),
+#   fit_indiv_narrow_mixed_agecat <- summary(glmer(outcome_composite ~ period + agebands_analysis + gender + (1|person_id), subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   fit_indiv_narrow_fixed_agecat <- summary(glm(outcome_composite ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens)),
+#   robust_se_cluster <- coeftest(glm(outcome_composite ~ period + agebands_analysis + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens), vcov = vcovCL(glm(outcome_DEATH ~ period + ageband + gender, subset = type_bleeding == "narrow", family = binomial, data = input_sens), cluster = input_sens$person_id[which(input_sens$type_bleeding=="narrow")])),
+#   
+#   
+# )
 
 # names(model_results_indiv) <- c("Effetti misti con età in continuo - Caso narrow",
 #                                 "Effetti fissi con età in continuo - Caso narrow",
@@ -369,31 +553,31 @@ model_results_indiv_sens <- list(
 #                                 "Effetti fissi con età categorica - Caso narrow",
 #                                 "Effetti fissi con età categorica e SE robusti - Caso narrow")
 
-save(model_results_indiv_sens, file = file.path(thisdiroutput,"model_results_indiv_sens.rda"))
+# save(model_results_indiv_sens, file = file.path(thisdiroutput,"model_results_indiv_sens.rda"))
 
-# Descriptive table with number of death, thromboembolic and emorragic events by period ----
-
-num_death <- input %>% 
-  group_by(period) %>% 
-  summarise(num_death = sum(outcome_DEATH))
-
-num_throm <- input %>% 
-  group_by(period) %>% 
-  summarise(num_throm = sum(outcome_THROM))
-  
-num_emorr <- input %>% 
-  group_by(period) %>% 
-  summarise(num_emorr = n())
-
-num_emorr_solo_prima <- input_sens %>% 
-  group_by(period) %>% 
-  summarise(num_emorr_prima = n())
-
-tables <- list(num_death, num_throm, num_emorr, num_emorr_solo_prima)
-
-descr_tab <- purrr::reduce(tables, inner_join, by = "period")
-
-save(descr_tab, file = file.path(thisdiroutput,"descr_tab.rda"))
+# # Descriptive table with number of death, thromboembolic and emorragic events by period ----
+# 
+# num_death <- input %>% 
+#   group_by(period) %>% 
+#   summarise(num_death = sum(outcome_DEATH))
+# 
+# num_throm <- input %>% 
+#   group_by(period) %>% 
+#   summarise(num_throm = sum(outcome_THROM))
+#   
+# num_emorr <- input %>% 
+#   group_by(period) %>% 
+#   summarise(num_emorr = n())
+# 
+# num_emorr_solo_prima <- input_sens %>% 
+#   group_by(period) %>% 
+#   summarise(num_emorr_prima = n())
+# 
+# tables <- list(num_death, num_throm, num_emorr, num_emorr_solo_prima)
+# 
+# descr_tab <- purrr::reduce(tables, inner_join, by = "period")
+# 
+# save(descr_tab, file = file.path(thisdiroutput,"descr_tab.rda"))
 
 # processing <- ...
   
