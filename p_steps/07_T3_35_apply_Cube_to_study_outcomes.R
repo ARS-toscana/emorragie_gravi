@@ -51,17 +51,20 @@ processing[, ageband_agg := fifelse(
 
 assigned_order <- vector(mode="list")
 
+assigned_statistics <- vector(mode="list")
+assigned_statistics[["days_DEATH"]] <- c("q25", "median", "q75")
+assigned_statistics[["N"]] <- c("sum")
+for (col_name in outcome_vars) {
+  assigned_statistics[[col_name]] <- "sum"
+}
+
 names(processing)
 processing <- Cube(input = processing,
                dimensions = c("Age","Gender","Period","TypeBleeding"),
                levels = assigned_levels,
-               measures = c("N", outcome_vars),
+               measures = c("N", "days_DEATH", outcome_vars),
                computetotal = c("Age","Gender","Period","TypeBleeding"),
-               statistics = list(
-                 list(c("sum") ,c("N", outcome_vars)),
-                 # list(c("median","q1","q3"),c("days_DEATH"))
-                 list(c("median"),c("days_DEATH"))
-               )
+               statistics = assigned_statistics
                
 )
 
