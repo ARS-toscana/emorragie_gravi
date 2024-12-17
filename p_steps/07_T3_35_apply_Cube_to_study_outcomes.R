@@ -56,10 +56,13 @@ processing <- Cube(input = processing,
                dimensions = c("Age","Gender","Period","TypeBleeding"),
                levels = assigned_levels,
                measures = c("N", outcome_vars),
-               computetotal = c("Age","Gender","Period","TypeBleeding") #,
-               # rule_from_numeric_to_categorical = assigned_rule,
-               # summary_threshold = 100,
-               # order = assigned_order_vector
+               computetotal = c("Age","Gender","Period","TypeBleeding"),
+               statistics = list(
+                 list(c("sum") ,c("N", outcome_vars)),
+                 # list(c("median","q1","q3"),c("days_DEATH"))
+                 list(c("median"),c("days_DEATH"))
+               )
+               
 )
 
 cols_to_change_name <- names(processing)[grepl("_sum$", names(processing))]
