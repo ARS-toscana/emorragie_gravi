@@ -115,7 +115,9 @@ Cube <- function(input, dimensions, levels, measures, statistics = NULL, compute
     
     for (statistic in statistics[[measure]]) {
       
-      if (!(statistic %in% accepted_functions)) {
+      statistic_string <- vector()
+      
+      if (!(statistic %in% accepted_functions) & !grepl("^q|Q[0-9]{2}$", statistic)) {
         stop(paste(statistic, "is not an accepted function"))
       }
       
@@ -126,7 +128,13 @@ Cube <- function(input, dimensions, levels, measures, statistics = NULL, compute
       measure_name <- paste(measure, statistic, sep = "_")
       measure_list <- c(measure_list, measure_name)
       measure_name_list <- measure
-      statistic <- parse(text = paste0("lapply(.SD,", statistic, ")"))
+      
+      tmp_str <- data.table::fcase(grepl("^q|Q[0-9]{2}$", statistic),
+                                   paste0("lapply(.SD, quantile, ", as.numeric(gsub("[a-z]|[A-Z]", "", statistic)) / 100,")"),
+                                   default = paste0("lapply(.SD,", statistic, ")"))
+      statistic_string <- c(statistic_string, tmp_str)
+      
+      statistic <- parse(text = statistic_string)
       
       tmp <- data.table::groupingsets(input, jj = c(statistic),
                                       by = unlist(levels, use.names = F),
