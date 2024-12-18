@@ -33,7 +33,7 @@ if (TEST){
 
 
 # save log file
-# sink(file="G:\\Drive condivisi\\USM\\ERSILIA\\EBM\\lavoro DISCONTINUATION bio (tuccori)\\disc_main_feb24_incidenti.txt")
+sink(file=file.path(thisdiroutput, "log_file.txt"))
 
 # import input datasets
 input <- readRDS(file.path(thisdirinput, "D4_analytical_dataset.rds"))
@@ -79,6 +79,10 @@ den_poss <- input %>%
                   group_by(time) %>% 
                   summarise(n_emor_poss = n())
 
+den_broad <- input %>%
+                   group_by(time) %>% 
+                   summarise(n_emor_broad = n())
+
 # creo un dataset dove l'unità è il tempo (mese)
 
 # outcome_vars <- grep("^outcome", names(input), value = TRUE)
@@ -89,7 +93,8 @@ results <- map(outcome_vars, function(var) {
   input %>%
     group_by(time) %>% 
     summarise(event_narrow = sum(.data[[var]]*(type_bleeding == "narrow"), na.rm = T),
-              event_poss = sum(.data[[var]]*(type_bleeding == "possible"), na.rm = T)) %>% 
+              event_poss = sum(.data[[var]]*(type_bleeding == "possible"), na.rm = T),
+              event_broad = sum(.data[[var]], na.rm = T)) %>% 
     mutate(period = case_when(time <= 26 ~ "1a",
                               (time > 26 & time <= 41) ~ "1b",
                               (time > 41 & time <= 44) ~ "1c",
@@ -117,8 +122,10 @@ for (i in names(results)) {
                          # ungroup() %>%
                          left_join(den_poss, by = "time") %>%
                          left_join(den_narrow, by = "time") %>%
+                         left_join(den_broad, by = "time") %>%
                          mutate(prop_poss = event_poss/n_emor_poss,
-                                prop_narrow = event_narrow/n_emor_narrow)
+                                prop_narrow = event_narrow/n_emor_narrow,
+                                prop_broad = event_broad/n_emor_broad)
 
 }
 
@@ -127,14 +134,14 @@ combined_data <- bind_rows(lapply(names(results_updated), function(name) {
     mutate(outcome = name)
 }), .id = "id")
 
-png(file.path(thisdiroutput,"outcomes_possible.png"), units="in", height=10, width=15, res=300)
+png(file.path(thisdiroutput,"outcomes_broad.png"), units="in", height=10, width=15, res=300)
 
 # scatter plot separati per outcome (nel tempo)
-ggplot(combined_data, aes(x = time, y = prop_poss)) +
+ggplot(combined_data, aes(x = time, y = prop_broad)) +
   geom_line(aes(color = outcome), size = 1) +
   geom_point(size = 1) +
   labs(
-    title = "Andamento della proporzione degli outcome di interesse (def. possible)",
+    title = "Andamento della proporzione degli outcome di interesse (def. broad)",
     x = "Tempo, mesi",
     y = "Proporzione"
   ) +
@@ -171,14 +178,14 @@ fit_models <- function(data) {
   list(
     # periodo
     fit_periodo_narrow <- summary(glm(cbind(event_narrow, n_emor_narrow) ~ period, family = binomial, data = data)),
-    fit_periodo_poss <- summary(glm(cbind(event_poss, n_emor_poss) ~ period, family = binomial, data = data)),
+    fit_periodo_broad <- summary(glm(cbind(event_broad, n_emor_broad) ~ period, family = binomial, data = data)),
     # stagionalità (considero un df per stagione, 4 all'anno, dove df = numero di nodi interni + 1)
     # se usassi una natural spline ns, terrei conto allo stesso tempo di trend e stagionalità mentr con pbs riesco ad isolare la stagionalità
     fit_per_stag_narrow <- summary(glm(cbind(event_narrow, n_emor_narrow) ~ pbs(month, df = 4) + period, family = binomial, data = data)),
-    fit_per_stag_poss <- summary(glm(cbind(event_poss, n_emor_poss) ~ pbs(month, df = 4) + period, family = binomial, data = data)),
+    fit_per_stag_broad <- summary(glm(cbind(event_broad, n_emor_broad) ~ pbs(month, df = 4) + period, family = binomial, data = data)),
     # trend e stagionalità (con pbs)
     fit_per_stag_trend_narrow <- summary(glm(cbind(event_narrow, n_emor_narrow) ~ pbs(month, df = 4) + time + period, family = binomial, data = data)),
-    fit_per_stag_trend_poss <- summary(glm(cbind(event_poss, n_emor_poss) ~ pbs(month, df = 4) + time + period, family = binomial, data = data))
+    fit_per_stag_trend_broad <- summary(glm(cbind(event_broad, n_emor_broad) ~ pbs(month, df = 4) + time + period, family = binomial, data = data))
   )
   
 }
@@ -233,7 +240,7 @@ input <- input %>%
 input <- input %>% 
   mutate(agebands_analysis = relevel(factor(agebands_analysis), "80-84")) 
 
-# rename exposure
+# rename period
 input <- input %>% 
            mutate(period = factor(case_when(period == "1a" ~ "Senza antidoto pre COVID",
                                      period == "1b" ~ "Senza antidoto con restrizioni",
@@ -241,6 +248,23 @@ input <- input %>%
                                      period == "2" ~ "Con antidoto senza linee guida",
                                      period == "3" ~ "Con antidoto con linee guida")))
 
+input <- input %>% 
+           mutate(period = factor(period, levels = c("Senza antidoto pre COVID",
+                                                     "Senza antidoto con restrizioni",
+                                                     "Senza antidoto senza restrizioni",
+                                                     "Con antidoto senza linee guida",
+                                                     "Con antidoto con linee guida")))
+
+# relevel period
+input <- input %>% 
+  mutate(period = relevel(factor(period), "Senza antidoto pre COVID"))
+
+# rename agebands
+input <- input %>% 
+           rename(Eta_cat = agebands_analysis)
+
+input <- input %>% 
+           mutate(Eta_cat = relevel(factor(Eta_cat), "80-84"))
 
 # Sensitivity analysis (considering only the first emorragic event per individual) ----
 
@@ -258,6 +282,10 @@ den_poss_sens <- input_sens %>%
                      group_by(time) %>% 
                      summarise(n_emor_poss = n())
 
+den_broad_sens <- input_sens %>%
+                     group_by(time) %>% 
+                     summarise(n_emor_broad = n())
+
 # creo un dataset dove l'unità è il tempo (mese)
 
 # outcome_vars <- grep("^outcome", names(input), value = TRUE)
@@ -268,7 +296,8 @@ results_sens <- map(outcome_vars, function(var) {
   input_sens %>%
     group_by(time) %>% 
     summarise(event_narrow = sum(.data[[var]]*(type_bleeding == "narrow"), na.rm = T),
-              event_poss = sum(.data[[var]]*(type_bleeding == "possible"), na.rm = T)) %>% 
+              event_poss = sum(.data[[var]]*(type_bleeding == "possible"), na.rm = T),
+              event_broad = sum(.data[[var]], na.rm = T)) %>% 
     mutate(period = case_when(time <= 26 ~ "1a",
                               (time > 26 & time <= 41) ~ "1b",
                               (time > 41 & time <= 44) ~ "1c",
@@ -296,8 +325,10 @@ for (i in names(results_sens)) {
     # ungroup() %>%
     left_join(den_poss_sens, by = "time") %>%
     left_join(den_narrow_sens, by = "time") %>%
+    left_join(den_broad_sens, by = "time") %>%
     mutate(prop_poss = event_poss/n_emor_poss,
-           prop_narrow = event_narrow/n_emor_narrow)
+           prop_narrow = event_narrow/n_emor_narrow,
+           prop_broad = event_broad/n_emor_broad)
   
 }
 
@@ -308,14 +339,14 @@ combined_data <- bind_rows(lapply(names(results_sens_updated), function(name) {
 
 # Plots ----
 
-png(file.path(thisdiroutput,"outcomes_possible_sens.png"), units="in", height=10, width=15, res=300)
+png(file.path(thisdiroutput,"outcomes_broad_sens.png"), units="in", height=10, width=15, res=300)
 
 # scatter plot separati per outcome (nel tempo)
 ggplot(combined_data, aes(x = time, y = prop_poss)) +
   geom_line(aes(color = outcome), size = 1) +
   geom_point(size = 1) +
   labs(
-    title = "Andamento della proporzione degli outcome di interesse (def. possible) - Solo primo outcome emorragico",
+    title = "Andamento della proporzione degli outcome di interesse (def.broad) - Solo primo outcome emorragico",
     x = "Tempo, mesi",
     y = "Proporzione"
   ) +
@@ -348,11 +379,6 @@ model_results_sens <- map(results_sens_updated, fit_models)
 save(model_results_sens, file = file.path(thisdiroutput,"model_results_sens.rda"))
 
 # analysis with individual as unit, for both main and sensitivity analysis ----
-
-library(openxlsx)
-library(broom)
-library(broom.mixed)
-
 
 outcomes <- c("outcome_DEATH", "outcome_THROM", "outcome_comp")
 
@@ -394,33 +420,33 @@ dataset_names <- c("input", "input_sens")
 # )
 
 models_definitions <- list(
-  "mix_eta_cont" = function(data, outcome) 
-    glmer(as.formula(paste(outcome, "~ period + age + gender + (1|person_id)")), 
-          subset = type_bleeding == "narrow", 
-          family = binomial, data = data),
+  # "mix_eta_cont" = function(data, outcome) 
+  #   glmer(as.formula(paste(outcome, "~ period + age + gender + (1|person_id)")), 
+  #         subset = type_bleeding == "narrow", 
+  #         family = binomial, data = data),
   
   "mix_eta_cat" = function(data, outcome) 
-    glmer(as.formula(paste(outcome, "~ period + agebands_analysis + gender + (1|person_id)")), 
+    glmer(as.formula(paste(outcome, "~ period + Eta_cat + gender + (1|person_id)")), 
           subset = type_bleeding == "narrow", 
           family = binomial, data = data),
   
-  "log_eta_cont" = function(data, outcome) 
-    glm(as.formula(paste(outcome, "~ period + age + gender")), 
-        subset = type_bleeding == "narrow", 
-        family = binomial, data = data),
+  # "log_eta_cont" = function(data, outcome) 
+  #   glm(as.formula(paste(outcome, "~ period + age + gender")), 
+  #       subset = type_bleeding == "narrow", 
+  #       family = binomial, data = data),
   
   "log_eta_cat" = function(data, outcome) 
-    glm(as.formula(paste(outcome, "~ period + agebands_analysis + gender")), 
+    glm(as.formula(paste(outcome, "~ period + Eta_cat + gender")), 
         subset = type_bleeding == "narrow", 
         family = binomial, data = data),
   
   "log_stag" = function(data, outcome) 
-    glm(as.formula(paste(outcome, "~ period + agebands_analysis + gender + pbs(month, df = 4)")), 
+    glm(as.formula(paste(outcome, "~ period + Eta_cat + gender + pbs(month, df = 4)")), 
         subset = type_bleeding == "narrow", 
         family = binomial, data = data),
   
   "mix_stag" = function(data, outcome) 
-    glmer(as.formula(paste(outcome, "~ period + agebands_analysis + gender + pbs(month, df = 4) + (1|person_id)")), 
+    glmer(as.formula(paste(outcome, "~ period + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)")), 
           subset = type_bleeding == "narrow", 
           family = binomial, data = data)
 
@@ -433,7 +459,7 @@ models_definitions <- list(
 for (i in outcomes) {
   # Definisci il percorso del file Excel
   out <- gsub("[^A-Za-z0-9]", "_", i)  # Rendi il nome del file sicuro
-  file_path <- file.path(thisdiroutput, paste0(out ,".xlsx"))
+  file_path <- file.path(thisdiroutput, paste0("narrow_", out ,".xlsx"))
   
   # Carica o crea il workbook
   if (file.exists(file_path)) {
@@ -449,7 +475,21 @@ for (i in outcomes) {
     dataset <- get(l)
     dataset_name <- ifelse(identical(dataset, input), "input", "input_sens")
     
-  
+    tabella_eventi <- dataset %>%
+      group_by(period) %>%
+      summarise(
+        n_eventi = sum(get(i), na.rm = TRUE),   # Usa il nome dinamico per l'outcome
+        n_emorragie = n()                        # Numero di soggetti (denominatore)
+      ) %>%
+      ungroup()
+    
+    # Aggiungi la riga "Totale"
+    final_table <- tabella_eventi %>%
+      bind_rows(data.frame(
+        period = "Totale",                     # Nome per la riga di totale
+        n_eventi = sum(tabella_eventi$n_eventi),
+        n_emorragie = sum(tabella_eventi$n_emorragie)
+      ))
   
   # Aggiungi un foglio per ogni modello
   for (j in names(models_definitions)) {
@@ -458,6 +498,9 @@ for (i in outcomes) {
     if (!(sheet_name %in% names(wb))) {
       addWorksheet(wb, sheet_name)
     }
+    
+    # write final table
+    writeData(wb, sheet = sheet_name, x = final_table, startRow = 1)
     
   #   # Scrivi i dati nel foglio
   #   if (k %in% names(models_fit)) {
@@ -488,20 +531,50 @@ for (i in outcomes) {
       
       model <- models_definitions[[j]](input, i)  # Passa l'outcome dinamicamente
       
-      # Verifica il tipo di modello per il tidy
-      if (inherits(model, "glmerMod")) {
-        summary_table <- broom.mixed::tidy(model)
-      } else {
-        summary_table <- broom::tidy(model)
-      }
+      # tab <- tab_model(model, transform = "exp", show.intercept = FALSE)
       
+      tab <- tidy(model, conf.int = TRUE, exponentiate = TRUE) %>% 
+               slice(-1) %>%
+               mutate(CI_95 = paste(round(conf.low,2), round(conf.high,2), sep = "-"),
+                      estimate = round(estimate, 2),
+                      term = case_when(
+                        term == "periodSenza antidoto con restrizioni" ~ "Senza antidoto con restrizioni",
+                        term == "periodSenza antidoto senza restrizioni" ~ "Senza antidoto senza restrizioni",
+                        term == "periodCon antidoto senza linee guida" ~ "Con antidoto senza linee guida",
+                        term == "periodCon antidoto con linee guida" ~ "Con antidoto con linee guida",
+                        term == "Eta_cat0-59" ~ "Età 0-59",
+                        term == "Eta_cat60-64" ~ "Età 60-64",
+                        term == "Eta_cat65-69"~ "Età 65-69",
+                        term == "Eta_cat70-74"~ "Età 70-74",
+                        term == "Eta_cat75-79"~ "Età 75-79",
+                        term == "Eta_cat85-89"~ "Età 85-89",
+                        term == "Eta_cat90+"~ "Età 90+",
+                        term == "genderM"~ "Sesso, M",
+                        TRUE ~ term # Mantiene il valore originale per altri livelli
+                      )) %>% 
+               select(c("term","estimate","CI_95")) %>% 
+               rename(OR = estimate)
+               
+      
+      # # Verifica il tipo di modello per il tidy
+      # if (inherits(model, "glmerMod")) {
+      #   summary_table <- broom.mixed::tidy(model)
+      # } else {
+      #   summary_table <- broom::tidy(model)
+      # }
+
       # Calcola BIC
       bic_value <- BIC(model)
+      # calcolo r2
+      r_quadro <- round(unlist(r2(model)),2)
       
       # Scrivi l'output nel foglio
-      writeData(wb, sheet = sheet_name, x = summary_table)
+      # writeData(wb, sheet = sheet_name, x = tab)
+      writeData(wb, sheet = sheet_name, x = tab, startRow = nrow(final_table) + 3)
       
-      writeData(wb, sheet = sheet_name, x = tibble(BIC = bic_value), startCol = ncol(summary_table) + 1, startRow = 1)
+      writeData(wb, sheet = sheet_name, x = tibble(BIC = bic_value), startCol = ncol(tab) + 1, startRow = 1)
+      
+      writeData(wb, sheet = sheet_name, x = tibble(R_quadro = r_quadro), startCol = ncol(tab) + 2, startRow = 1)
       
       NULL
     }, error = function(e) {
@@ -521,8 +594,179 @@ for (i in outcomes) {
   saveWorkbook(wb, file_path, overwrite = TRUE)
 }
 
+# broad (narrow + possible) ----
+
+models_definitions <- list(
+  # "mix_eta_cont" = function(data, outcome) 
+  #   glmer(as.formula(paste(outcome, "~ period + age + gender + (1|person_id)")), 
+  #         family = binomial, data = data),
+  
+  "mix_eta_cat" = function(data, outcome) 
+    glmer(as.formula(paste(outcome, "~ period + Eta_cat + gender + (1|person_id)")), 
+          family = binomial, data = data),
+  
+  # "log_eta_cont" = function(data, outcome) 
+  #   glm(as.formula(paste(outcome, "~ period + age + gender")), 
+  #       family = binomial, data = data),
+  
+  "log_eta_cat" = function(data, outcome) 
+    glm(as.formula(paste(outcome, "~ period + Eta_cat + gender")), 
+        family = binomial, data = data),
+  
+  "log_stag" = function(data, outcome) 
+    glm(as.formula(paste(outcome, "~ period + Eta_cat + gender + pbs(month, df = 4)")), 
+        family = binomial, data = data),
+  
+  "mix_stag" = function(data, outcome) 
+    glmer(as.formula(paste(outcome, "~ period + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)")), 
+          family = binomial, data = data)
+  
+  
+)
+
+# names(models_fit) <- models_name
+
+# Ciclo per ciascun outcome
+for (i in outcomes) {
+  # Definisci il percorso del file Excel
+  out <- gsub("[^A-Za-z0-9]", "_", i)  # Rendi il nome del file sicuro
+  file_path <- file.path(thisdiroutput, paste0("broad_",out ,".xlsx"))
+  
+  # Carica o crea il workbook
+  if (file.exists(file_path)) {
+    wb <- loadWorkbook(file_path)
+  } else {
+    wb <- createWorkbook()
+  }
+  
+  
+  for (l in dataset_names) {
+    
+    # Nome del dataset da usare nel foglio
+    dataset <- get(l)
+    dataset_name <- ifelse(identical(dataset, input), "input", "input_sens")
+    
+    tabella_eventi <- dataset %>%
+      group_by(period) %>%
+      summarise(
+        n_eventi = sum(get(i), na.rm = TRUE),   # Usa il nome dinamico per l'outcome
+        n_emorragie = n()                        # Numero di soggetti (denominatore)
+      ) %>%
+      ungroup()
+    
+    # Aggiungi la riga "Totale"
+    final_table <- tabella_eventi %>%
+      bind_rows(data.frame(
+        period = "Totale",                     # Nome per la riga di totale
+        n_eventi = sum(tabella_eventi$n_eventi),
+        n_emorragie = sum(tabella_eventi$n_emorragie)
+      ))
+    
+    # Aggiungi un foglio per ogni modello
+    for (j in names(models_definitions)) {
+      sheet_name <- paste0(sub("^[^_]*_", "", out), "_", j, "_", l)
+      # Controlla se il foglio esiste già
+      if (!(sheet_name %in% names(wb))) {
+        addWorksheet(wb, sheet_name)
+      }
+      
+      # write final table
+      writeData(wb, sheet = sheet_name, x = final_table, startRow = 1)
+      
+      #   # Scrivi i dati nel foglio
+      #   if (k %in% names(models_fit)) {
+      #     writeData(wb, sheet = k, x = models_fit[[k]])
+      #   }
+      # }
+      
+      # Ottieni il summary del modello
+      # model_summary <- broom::tidy(models_fit[[j]])
+      
+      # Prova a eseguire il modello
+      result <- tryCatch({
+        #   # Esegui il modello
+        #   model <- models_fit[[j]](input) 
+        #   # Se il modello funziona, scrivi il summary, verificando il tipo di modello
+        #   if (inherits(model, "glmerMod")) {
+        #     summary_table <- broom.mixed::tidy(model)
+        #   } else {
+        #     summary_table <- broom::tidy(model)
+        #   }
+        #   writeData(wb, sheet = j, x = summary_table)
+        #   NULL  # Nessun errore
+        # }, error = function(e) {
+        #   # Se c'è un errore, scrivi il messaggio nel foglio
+        #   writeData(wb, sheet = j, x = tibble(Error = e$message))
+        #   e$message  # Ritorna il messaggio d'errore
+        # })
+        
+        model <- models_definitions[[j]](input, i)  # Passa l'outcome dinamicamente
+        
+        # tab <- tab_model(model, transform = "exp", show.intercept = FALSE)
+        
+        tab <- tidy(model, conf.int = TRUE, exponentiate = TRUE) %>% 
+          slice(-1) %>%
+          mutate(CI_95 = paste(round(conf.low,2), round(conf.high,2), sep = "-"),
+                 estimate = round(estimate, 2),
+                 term = case_when(
+                   term == "periodSenza antidoto con restrizioni" ~ "Senza antidoto con restrizioni",
+                   term == "periodSenza antidoto senza restrizioni" ~ "Senza antidoto senza restrizioni",
+                   term == "periodCon antidoto senza linee guida" ~ "Con antidoto senza linee guida",
+                   term == "periodCon antidoto con linee guida" ~ "Con antidoto con linee guida",
+                   term == "Eta_cat0-59" ~ "Età 0-59",
+                   term == "Eta_cat60-64" ~ "Età 60-64",
+                   term == "Eta_cat65-69"~ "Età 65-69",
+                   term == "Eta_cat70-74"~ "Età 70-74",
+                   term == "Eta_cat75-79"~ "Età 75-79",
+                   term == "Eta_cat85-89"~ "Età 85-89",
+                   term == "Eta_cat90+"~ "Età 90+",
+                   term == "genderM"~ "Sesso, M",
+                   TRUE ~ term # Mantiene il valore originale per altri livelli
+                 )) %>% 
+          select(c("term","estimate","CI_95")) %>% 
+          rename(OR = estimate)
+        
+        
+        # # Verifica il tipo di modello per il tidy
+        # if (inherits(model, "glmerMod")) {
+        #   summary_table <- broom.mixed::tidy(model)
+        # } else {
+        #   summary_table <- broom::tidy(model)
+        # }
+        
+        # Calcola BIC
+        bic_value <- BIC(model)
+        # calcolo r2
+        r_quadro <- round(unlist(r2(model)),2)
+        
+        # Scrivi l'output nel foglio
+        # writeData(wb, sheet = sheet_name, x = tab)
+        writeData(wb, sheet = sheet_name, x = tab, startRow = nrow(final_table) + 3)
+        
+        writeData(wb, sheet = sheet_name, x = tibble(BIC = bic_value), startCol = ncol(tab) + 1, startRow = 1)
+        
+        writeData(wb, sheet = sheet_name, x = tibble(R_quadro = r_quadro), startCol = ncol(tab) + 2, startRow = 1)
+        
+        NULL
+      }, error = function(e) {
+        # Scrivi il messaggio d'errore se il modello fallisce
+        writeData(wb, sheet = sheet_name, x = tibble(Error = e$message))
+        e$message
+      })
+      
+      # Log per console (facoltativo)
+      if (!is.null(result)) {
+        message("Errore nel modello '", j, "' per outcome '", i, "': ", result)
+      }
+    }
+  }
+  
+  # Salva il workbook
+  saveWorkbook(wb, file_path, overwrite = TRUE)
+}
+
 # close print log file
-# sink()
+sink()
 
 # model_results_indiv_sens <- list(
 #   
