@@ -130,7 +130,7 @@ Cube <- function(input, dimensions, levels, measures, statistics = NULL, compute
       measure_name_list <- measure
       
       tmp_str <- data.table::fcase(grepl("^q|Q[0-9]{2}$", statistic),
-                                   paste0("lapply(.SD, quantile, ", as.numeric(gsub("[a-z]|[A-Z]", "", statistic)) / 100,")"),
+                                   paste0("lapply(.SD, quantile, ", as.numeric(gsub("[a-z]|[A-Z]", "", statistic)) / 100,", na.rm = T)"),
                                    default = paste0("lapply(.SD,", statistic, ")"))
       statistic_string <- c(statistic_string, tmp_str)
       
