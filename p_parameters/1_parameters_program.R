@@ -1,7 +1,7 @@
 # #set directory with input data
 
 dirinput <- paste0(thisdir,"/i_input/")
-dirinput <- "P:/osservatori/epidemiologia/FARMACOEPI/OTGC/emorraggie_gravi/CDM_instances/241125/"
+dirinput <- "P:/osservatori/epidemiologia/FARMACOEPI/OTGC/emorraggie_gravi/CDM_instances/250204/"
 dirtest <- file.path(thisdir,"i_test")
 dircodelist <- file.path(thisdir,"p_parameters","archive_parameters")
 
@@ -41,7 +41,7 @@ dirconceptsets <- set_and_create_dir(paste0(dirinput,"/g_intermediate/conceptset
 # dirpromptsets <- set_and_create_dir("/g_intermediate/promptset_datasets/")
 direxp <- set_and_create_dir(paste0(dirinput,"/g_export/"))
 dirD6 <- set_and_create_dir(paste0(dirinput,"/g_export/Formatted tables/"))
-dirfig <- set_and_create_dir("/g_export/Figures/")
+dirfig <- set_and_create_dir(paste0(direxp,"/Figures/"))
 dirmacro <- paste0(thisdir,"/p_macro/")
 dirpargen <- set_and_create_dir(paste0(dirinput,"/g_parameters/"))
 # direvents <- set_and_create_dir("/g_intermediate/events/")
@@ -71,7 +71,7 @@ invisible(lapply(list.of.packages, require, character.only = T))
 rm(read_library, new.packages, list.of.packages)
 
 # load macros
-source(paste0(dirmacro, "CreateConceptSetDatasets_v20.R"))
+source(paste0(dirmacro, "CreateConceptSetDatasets_v21.R"))
 source(paste0(dirmacro, "CreateItemsetDatasets_v03.R"))
 source(paste0(dirmacro, "MergeFilterAndCollapse_v5.R"))
 source(paste0(dirmacro, "CreateSpells_v15.R"))

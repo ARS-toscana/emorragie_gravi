@@ -1,12 +1,21 @@
 ########################################################%##
 #                                                          #
 ####  COMPUTE D3_episodes_of_treatement
-  ####
+####
 #                                                          #
 ########################################################%##
 
 
 # author: Rosa Gini
+
+# v 1.2 11 Mar 2025
+
+# debugged AdhereR: followup.window.duration was set by default to 731
+
+# v 1.1 6 Feb 2025
+
+# handled the case when duration == 0
+
 
 # v 1.0 24 Nov 2024
 
@@ -32,17 +41,19 @@ obsperiods <- readRDS(file.path(thisdirinput, "D3_clean_spells.rds"))
 
 for (j in c(1,2)) {
   temp <- dispensings[label == j,]
-  temp <- temp[is.na (duration) , duration := 30]
+  temp <- temp[is.na(duration) , duration := 30]
+  temp <- temp[duration <= 0 , duration := 30]
   temp <- compute.treatment.episodes(temp,
-                                           ID.colname= "person_id",
-                                           event.date.colname= "date",
-                                           event.duration.colname= "duration",
-                                           medication.class.colname= "label",
-                                           carryover.within.obs.window = TRUE, # carry-over into the OW
-                                           carry.only.for.same.medication = TRUE, # & only for same type
-                                           medication.change.means.new.treatment.episode = TRUE, # & type change
-                                           maximum.permissible.gap = 30, # & a gap longer than 30 days
-                                           maximum.permissible.gap.unit = "days"
+                                     ID.colname= "person_id",
+                                     event.date.colname= "date",
+                                     event.duration.colname= "duration",
+                                     medication.class.colname= "label",
+                                     carryover.within.obs.window = TRUE, # carry-over into the OW
+                                     carry.only.for.same.medication = TRUE, # & only for same type
+                                     medication.change.means.new.treatment.episode = TRUE, # & type change
+                                     maximum.permissible.gap = 30, # & a gap longer than 30 days
+                                     maximum.permissible.gap.unit = "days",
+                                     followup.window.duration = 4000
   )
   
   setnames(temp,c("episode.start","episode.end"),c("start_date","end_date"))
@@ -114,7 +125,7 @@ processing <- processing[, ..tokeep]
 
 setorderv(
   processing,
-   c("person_id","start_date")
+  c("person_id","start_date")
 )
 
 
@@ -127,16 +138,16 @@ nameoutput <- "D3_episodes_of_treatment"
 nameoutputext <- paste0(nameoutput,".rds")
 assign(nameoutput, outputfile)
 saveRDS(outputfile, file = file.path(thisdiroutput, nameoutputext))
-
-
-# compare output with ground truth with integer dates
-# Define the reference date
-ref_date <- as.Date("2015-01-01")
-
-# Calculate the difference in days and replace dates
-vectordates <- c("start_date","end_date")
-for (variable in vectordates) {
-  processing[, (variable) := as.integer(get(variable) - ref_date)]
-}
-#
-# fwrite(processing,file = "C:/temp/temp.csv")
+# 
+# 
+# # compare output with ground truth with integer dates
+# # Define the reference date
+# ref_date <- as.Date("2015-01-01")
+# 
+# # Calculate the difference in days and replace dates
+# vectordates <- c("start_date","end_date")
+# for (variable in vectordates) {
+#   processing[, (variable) := as.integer(get(variable) - ref_date)]
+# }
+# #
+# # fwrite(processing,file = "C:/temp/temp.csv")

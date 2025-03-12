@@ -1,7 +1,7 @@
 # #set dates
 
 study_start_date <-  ymd(20180101)
-study_end_date <- ymd(20231231)
+study_end_date <- ymd(20240331)
 
 baselinedate_components <- ymd(20190101)
 
@@ -43,7 +43,6 @@ days <- 365
 
 Agebands_countpersontime = c(0, 17, 39, 59 ,79)
 Agebands_labels <- c("0-17", "18-39", "40-59", "60-79", "80+")
-
 names(Agebands_countpersontime) <- Agebands_labels
 
 Agebands_large = c(0, 18, 60)

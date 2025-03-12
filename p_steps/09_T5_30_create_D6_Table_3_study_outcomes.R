@@ -7,6 +7,9 @@
 
 # author: Rosa Gini
 
+# v 1.1 18 Dec 2024
+
+# add days to death
 
 # v 1.0 12 Dec 2024
 
@@ -54,6 +57,10 @@ for (out in outcome_vars) {
   s = s + 1
 }
 
+col_headers = c(col_headers, "Giorni dal sanguinamento al decesso")
+tab_nice[,(paste0("cell_",s)) := paste0(as.character(days_DEATH_q50)," (",as.character(days_DEATH_q25),"-",as.character(days_DEATH_q75),")") ]
+s = s + 1
+
 row_headers <- names(tab_nice)[grep("^head_",names(tab_nice))]
 cells <- names(tab_nice)[grep("^cell_",names(tab_nice))]
 
@@ -61,24 +68,60 @@ tokeep <- c("Period_LabelValue",row_headers,cells)
 
 tab_nice <- tab_nice[, ..tokeep]
 
+# 
+# 
+# # # Reshape
+# # tab_nice <- melt(tab_nice, id.vars = c("Period_LabelValue",headers), measure.vars = patterns("^cell_"), variable.name = "cell", value.name = "value")
+# 
+# # order
+# 
+# setorderv(
+#   tab_nice, c("head_1","Period_LabelValue")
+#   )
+# 
+# tab_nice[,period := name_period[Period_LabelValue]]
+# 
+# tokeep <- c("period", "head_1",cells)
+# 
+# tab_nice <- tab_nice[, ..tokeep]
+# 
+# setnames(tab_nice,tokeep, c("Periodo",row_header_1,col_headers))
 
+tab_nice <- melt(tab_nice, 
+                 id.vars = c("Period_LabelValue", "head_1"),  # Columns to keep as is
+                 measure.vars = patterns("^cell_"),         # Columns to melt (those starting with "cell_")
+                 variable.name = "cell", 
+                 value.name = "value")
 
-# # Reshape
-# tab_nice <- melt(tab_nice, id.vars = c("Period_LabelValue",headers), measure.vars = patterns("^cell_"), variable.name = "cell", value.name = "value")
+# Reshape the table back to wide format with Period_LabelValue as columns
+tab_nice <- dcast(tab_nice, 
+                  head_1 + cell ~ Period_LabelValue, 
+                  value.var = "value")
+
+# transform cell into a number
+tab_nice[, cell := gsub("cell_", "", cell)]
+tab_nice[, cell := as.numeric(gsub("_", ".", cell))]
+
 
 # order
+setorderv(tab_nice, c("head_1","cell"))
+tab_nice[, ord := seq_len(.N)]
 
-setorderv(
-  tab_nice, c("head_1","Period_LabelValue")
-  )
+# add row_header
+tab_nice[, row_header := col_headers[cell]]
 
-tab_nice[,period := name_period[Period_LabelValue]]
+# remove cell
+tab_nice[, cell := NULL]
+tab_nice[, ord := NULL]
 
-tokeep <- c("period", "head_1",cells)
+# rename
+old_col_names = c(c("head_1","row_header"),setdiff( names(tab_nice),c("head_1","row_header")))
+new_col_names <- unlist(c("Tipo sanguinamento","Periodo", name_period[setdiff( names(tab_nice),c("head_1","row_header"))]))
+setnames(tab_nice, old_col_names,  new_col_names)
 
-tab_nice <- tab_nice[, ..tokeep]
+tab_nice <- tab_nice[, ..new_col_names]
 
-setnames(tab_nice,tokeep, c("Periodo",row_header_1,col_headers))
+
 
 ########################################
 # save

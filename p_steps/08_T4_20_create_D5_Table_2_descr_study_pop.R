@@ -7,6 +7,10 @@
 
 # author: Rosa Gini
 
+# v 1.2 18 Dec 2024
+
+# added total
+
 # v 1.1 16 Dec 2024
 
 # added number of previous bleedings and median days since most recent
@@ -35,6 +39,11 @@ for (type in c("narrow","broad")) {
   if (type == "narrow") {
     cohort <- cohort[event == "bleeding_narrow",]
   }
+  
+  total <- copy(cohort)
+  total[,period := "AllPeriod"]
+  
+  cohort <- rbind(cohort, total)
   
   base_table2 <- cohort[, .(n = .N), by = period]
   temp <- cohort[gender == "F", .(n_gender_F = .N), by = period]

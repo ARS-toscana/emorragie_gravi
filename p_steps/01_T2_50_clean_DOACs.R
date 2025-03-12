@@ -1,12 +1,16 @@
 ########################################################%##
 #                                                          #
 ####  COMPUTE D3_dispensings_DOACs
-  ####
+####
 #                                                          #
 ########################################################%##
 
 
 # author: Rosa Gini
+
+# v 1.1 6 Feb 2025
+
+# for performance only: remove person_ids not in D3_PERSONS
 
 # v 1.0 24 Nov 2024
 
@@ -28,8 +32,10 @@ if (TEST){
 load(file.path(thisdirinput, "Apixaban.RData"))
 load(file.path(thisdirinput, "Rivaroxaban.RData"))
 load(file.path(thisdirinput, "OtherDOACs.RData"))
+persons <- readRDS(file.path(thisdirinput, "D3_PERSONS.rds"))
 
 # process        
+
 
 processing <- Apixaban[, label := 2]
 processing <- rbind(processing, Rivaroxaban, fill = T)
@@ -53,9 +59,16 @@ processing[, duration := pezzi * number_of_pills * conversion]
 processing <- rbind(processing, OtherDOACs, fill = T)
 processing <- processing[is.na(label), label := 3]
 
+
+
+# clean (keep persons in D3_PERSONS)
+
 processing[, COD_ATC5 := ""]
 
 setnames(processing,c("ID","DATE"),c("person_id","date"))
+
+processing <- merge(processing,persons[,.(person_id)], by = "person_id")
+
 
 ################################
 # clean
@@ -71,7 +84,7 @@ processing <- processing[, ..tokeep]
 
 setorderv(
   processing,
-   c("person_id","date")
+  c("person_id","date")
 )
 
 

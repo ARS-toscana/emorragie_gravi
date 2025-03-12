@@ -5,7 +5,11 @@
 ########################################################%##
 
 
-# author: Rosa Gini
+# author: Rosa Gini, Davide Messina
+
+# v 0.2 18 Dec 2024
+
+# add days to death, updated Cube
 
 # v 0.1 13 Dec 2024
 
@@ -52,7 +56,7 @@ processing[, ageband_agg := fifelse(
 assigned_order <- vector(mode="list")
 
 assigned_statistics <- vector(mode="list")
-assigned_statistics[["days_DEATH"]] <- c("q25", "median", "q75")
+assigned_statistics[["days_DEATH"]] <- c("q25", "q50", "q75")
 assigned_statistics[["N"]] <- c("sum")
 for (col_name in outcome_vars) {
   assigned_statistics[[col_name]] <- "sum"

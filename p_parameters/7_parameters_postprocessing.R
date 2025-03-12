@@ -17,3 +17,5 @@ name_outcome[["outcome_AMI"]] <- "Infarto del miocardio"
 name_outcome[["outcome_PE"]] <- "Embolia polmonare"
 name_outcome[["outcome_THROM"]] <- "Trombosi"
 name_outcome[["outcome_DIC"]] <- "Coagulazione intravascolare disseminata"
+name_outcome[["outcome_comp"]] <- "Trombosi o decesso"
+

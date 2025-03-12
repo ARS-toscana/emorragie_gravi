@@ -22,7 +22,7 @@ if (TEST){
   thisdiroutput <- file.path(dirtest,testname,"g_output")
   dir.create(thisdiroutput, showWarnings = F)
 }else{
-  thisdirinput <- dirtemp
+  thisdirinput <- direxp
   thisdiroutput <- direxp
 }
 
@@ -140,7 +140,7 @@ for (type in c("narrow","broad")) {
   # save
   
   outputfile <- tab_nice
-  nameoutput <- paste0("D6_Table_2_",type)
+  nameoutput <- paste0("D6_Table_2_descr_study_pop_",type)
   assign(nameoutput, outputfile)
   # rds
   saveRDS(outputfile, file = file.path(thisdiroutput, paste0(nameoutput,".rds")))
