@@ -19,8 +19,9 @@ rm(list=ls(all.names=TRUE))
 
 #set the directory where the file is saved as the working directory
 if (!require("rstudioapi")) install.packages("rstudioapi")
-thisdir<-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-thisdir<-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+hisdir <- setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+thisdir <- setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+
 
 ####################
 # load parameters
@@ -41,6 +42,7 @@ source(paste0(thisdir,"/p_steps/01_T2_20_create_spells.R"))
 source(paste0(thisdir,"/p_steps/01_T2_30_create_persons.R"))
 source(paste0(thisdir,"/p_steps/01_T2_50_clean_DOACs.R"))
 source(paste0(thisdir,"/p_steps/01_T2_60_create_episodes_of_treatement.R"))
+source(paste0(thisdir,"/p_steps/01_T2_70_create_D3_dispensings_AA.R"))
 source(paste0(thisdir,"/p_steps/01_T2_80_selection_criteria_from_PERSON_to_persons_with_MoI.R"))
 source(paste0(thisdir,"/p_steps/02_T3_10_select_persons_with_MoI.R"))
 source(paste0(thisdir,"/p_steps/03_T3_10_create_source_population.R"))

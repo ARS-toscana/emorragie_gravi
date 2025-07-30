@@ -20,7 +20,7 @@ if (TEST){
   dir.create(thisdiroutput, showWarnings = F)
 }else{
   thisdirinput <- dirinput
-  thisdiroutput <- direxp
+  thisdiroutput <- dirtemp
 }
 
 # import
@@ -55,13 +55,13 @@ setorderv(
 
 tokeep <- c("data","AIC","hospital_id","number_of_vials","number_of_5_vials","number_of_9_vials")
 
-tokeep <- c("data","Nvialsday","year","month")
+tokeep <- c("data","Nvialsday","Ndispday","year","month")
 
 
 processing <- processing[, ..tokeep]
 setorderv(
   processing,
-   c("year","month")
+  c("year","month")
 )
 
 
