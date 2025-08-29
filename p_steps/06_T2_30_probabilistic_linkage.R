@@ -18,7 +18,7 @@
 
 if (TEST){
   testname <- "test_D3_dispensings_AA"
-  thisdirinput <- file.path(dirtest,testname)
+  thisdirinput <- file.path(dirtest,testname,"g_output")
   thisdiroutput <- file.path(dirtest,testname,"g_output")
   dir.create(thisdiroutput, showWarnings = F)
 }else{
@@ -29,11 +29,6 @@ if (TEST){
 # when running on real data
 D3_dispensings_AA <- readRDS(file.path(thisdirinput, "D3_dispensings_AA.rds"))
 D3_study_population <- readRDS(file.path(thisdirinput, "D3_study_population.rds"))
-
-# when running on simulated data
-# D3_dispensings_AA <- readRDS(file.path(thisdirinput, "g_output", "D3_dispensings_AA.rds"))
-# load simulated study_population (to be saved first, in simulate_input.R)
-# D3_study_population <- readRDS(file.path(thisdirinput,"..", "test_D3_prob_linkage", "g_output", "D3_study_population.rds"))
 
 
 ## 1) matching naive: rows with negative values for dispensings/vials removed ----
