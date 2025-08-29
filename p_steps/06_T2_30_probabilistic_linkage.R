@@ -107,7 +107,7 @@ match_2_round <- match_2_round[, `:=`(is_1_match = 0,
                                       is_2_match = fifelse(!is.na(data) & !is.na(date_bleeding), 1, 0))]
 
 # bind ids rows with 1°round matching and those with 2° round matching
-match_df <- rbind(match_exact[, .(person_id, type_bleeding, is_1_match, is_2_match, data, id_dispensing, Nvialsday)], match_2_round[, .(person_id, type_bleeding, is_1_match, is_2_match, data, id_dispensing, Nvialsday)])
+match_df <- rbind(match_exact[, .(person_id, event, is_1_match, is_2_match, data, id_dispensing, Nvialsday)], match_2_round[, .(person_id, event, is_1_match, is_2_match, data, id_dispensing, Nvialsday)])
 
 # create exposure variable
 match_df <- match_df[, is_exposed := fifelse(is_1_match == 1 | is_2_match == 1, 1, 0)]
@@ -137,23 +137,23 @@ descriptive_table <- list(
 
 today <- format(Sys.Date(), "%Y%m%d")
 
-tab <- match_df[!is.na(type_bleeding) & !duplicated(person_id)]
+tab <- match_df[!is.na(event) & !duplicated(person_id)]
 
-tbl1 <- tab |> tbl_summary(by = type_bleeding, include = is_exposed) |>
+tbl1 <- tab |> tbl_summary(by = event, include = is_exposed) |>
        add_overall() |> 
        as_gt() |> 
        gt::gtsave(filename = file.path(thisdiroutput,paste0("tbl_all", today, ".docx")))
 
 tab_exposed <- tab[is_exposed==1 ,]
 
-tbl2 <- tab_exposed |> tbl_summary(by = type_bleeding, include = c(is_1_match, is_2_match)) |>
+tbl2 <- tab_exposed |> tbl_summary(by = event, include = c(is_1_match, is_2_match)) |>
                add_overall() |> 
                as_gt() |> 
                gt::gtsave(filename = file.path(thisdiroutput,paste0("tbl_exposed", today, ".docx")))
 
 # 2) descriptive table fes
 
-dispensing_summary <- match_df[!is.na(data), .(n_bleedings = if (all(is.na(type_bleeding))) 0L else .N), by = id_dispensing]
+dispensing_summary <- match_df[!is.na(data), .(n_bleedings = if (all(is.na(event))) 0L else .N), by = id_dispensing]
 
 setorder(dispensing_summary, n_bleedings)
 
