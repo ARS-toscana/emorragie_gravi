@@ -117,15 +117,22 @@ match_df <- match_df[, is_exposed := fifelse(is_1_match == 1 | is_2_match == 1, 
 D3_dispensings_AA[, tag := NA]
 D3_dispensings_AA[!is.na(data), tag := duplicated(data)]
 
-D3_study_population[, tag := NA]
-D3_study_population[!is.na(date_bleeding), tag := duplicated(person_id, date_bleeding)]
+# D3_study_population[, tag := NA]
+# D3_study_population[!is.na(date_bleeding), tag := duplicated(person_id, date_bleeding)]
+
+bleeding_counts <- D3_study_population[!is.na(date_bleeding), .N, by = date_bleeding]
+setorder(bleeding_counts, N)
 
 
 descriptive_table <- list(
   
   "Number of rows of D3_study_population dataset (bleeding as unit)" = nrow(D3_study_population),
   "Number of rows of dispensing_AA dataset (dispensing day and hospital as unit)" = nrow(D3_dispensings_AA),
-  "Number of bleeding dates replicated in D3_study_population" = D3_study_population[, .N, by = tag],
+  # "Number of bleeding dates replicated in D3_study_population" = D3_study_population[, .N, by = tag],
+  "Number of bleeding dates in D3_study_population by n of duplication" = bleeding_counts[, .N, by = N],
+  "Number of rows of D3_study_population dataset with unique bleedings" = nrow(D3_study_population_u),
+  "Number of rows of the matched dataset after 1 round of matching (exact match)" = nrow(match_exact),
+  "Number of rows of the matched dataset after 2 round of matching (1 not included)" = nrow(match_2_round),
   "Number of unique dispensing dates" = D3_dispensings_AA[, uniqueN(data)],
   "Number of dispensing dates replicated in D3_dispensings_AA" = D3_dispensings_AA[, .N, by = tag],
   "Number of rows of the matched dataset (inner join at 1 round and full join at 2 round)" = nrow(match_df)
