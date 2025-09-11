@@ -14,11 +14,17 @@
 # - remove rows with exact match (1 to 1) and then move to second round matching (with tolerance);
 # - print new descriptive tables with more details and stratified by type of bleeding;
 
+# v 0.3 02 Sep 2025 - Refining record linkage:
+# - focus only on narrow bleedings;
+# - extend the linkage to those bleedings with duplicated dates;
+# - implement a probabilistic linkage to solve remaining ambiguities after the deterministic one already implemented;
+
+
 #############################
 
 if (TEST){
-  testname <- "test_D3_dispensings_AA"
-  thisdirinput <- file.path(dirtest,testname,"g_output")
+  testname <- "test_D3_prob_linkage"
+  thisdirinput <- file.path(dirtest,testname)
   thisdiroutput <- file.path(dirtest,testname,"g_output")
   dir.create(thisdiroutput, showWarnings = F)
 }else{
@@ -26,24 +32,36 @@ if (TEST){
   thisdiroutput <- direxp
 }
 
-# when running on real data
+# load data
 D3_dispensings_AA <- readRDS(file.path(thisdirinput, "D3_dispensings_AA.rds"))
 D3_study_population <- readRDS(file.path(thisdirinput, "D3_study_population.rds"))
 
 
 ## 1) matching naive: rows with negative values for dispensings/vials removed ----
 
+descriptive_fes_pre_management <- list(
+  
+  "Distribution of number of negative vials in fes" = D3_dispensings_AA[Nvialsday<0, .(N = .N), by = Nvialsday]
+  
+)
+
+saveRDS(descriptive_fes_pre_management, file = file.path(thisdiroutput,"descriptive_fes_pre_management.rds"))
+
+
 # remove negative records
 D3_dispensings_AA <- D3_dispensings_AA[Nvialsday>0 & Ndispday>0]
+
+# keep only narrow bleedings
+D3_study_population <- D3_study_population[event=="bleeding_narrow" ,]
 
 # reshape dataset with bleedings with unique rows per date of bleeding
 counts <- D3_study_population[,.(N = .N), by = date_bleeding]
 
-#?? in caso di date di bleeding coincidenti, quale tengo (e quindi coi caratterizzo) e quale butto? Tutte. Tengo solo quelle non ripetute
+# keep only bleedings with unique dates 
 D3_study_population_u <- D3_study_population[date_bleeding %in% counts[N == 1, date_bleeding]]
 
-#?? quindi butto anche righe di fes con date coincidenti? NO(?!)
-# D3_dispensings_AA_u <- D3_dispensings_AA[!duplicated(data) ,]
+# keep only bleedings with duplicated dates
+D3_study_population_d <- D3_study_population[!date_bleeding %in% counts[N == 1, date_bleeding]]
 
 # create id dispensing
 D3_dispensings_AA <- D3_dispensings_AA[, id_dispensing:= 1:.N]
@@ -95,34 +113,89 @@ match_2_round <- match_2_round %>%
   relocate(date_bleeding, .after = "person_id") 
 
 # create tag variables to identify matching quality
-match_exact <- match_exact[, `:=`(is_1_match = 1,
-                                  is_2_match = 0)]
+match_exact <- match_exact[, `:=`(quality_matching = "1° round")]
 
-match_2_round <- match_2_round[, `:=`(is_1_match = 0,
-                                      is_2_match = fifelse(!is.na(data) & !is.na(date_bleeding), 1, 0))]
+match_2_round <- match_2_round[, `:=`(quality_matching = fifelse(!is.na(data) & !is.na(date_bleeding), "2° round", "No matching"))]
 
 # bind ids rows with 1°round matching and those with 2° round matching
-match_df <- rbind(match_exact[, .(person_id, event, is_1_match, is_2_match, data, id_dispensing, Nvialsday)], match_2_round[, .(person_id, event, is_1_match, is_2_match, data, id_dispensing, Nvialsday)])
+match_df <- rbind(match_exact[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)], match_2_round[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)])
 
 # create exposure variable
-match_df <- match_df[, is_exposed := fifelse(is_1_match == 1 | is_2_match == 1, 1, 0)]
+match_df <- match_df[, is_exposed := fifelse(quality_matching %in% c("1° round", "2° round"), 1, 0)]
+
+ids_dispensing_matched <- match_df[is_exposed==1, id_dispensing]
+
+# isolate dispensings in fes still not associated with any bleedings
+D3_dispensings_AA_s <- D3_dispensings_AA[!id_dispensing %in% ids_dispensing_matched, ]
+
+# handle bleedings with duplicated dates: count nrows by date in both dataset and proceed with a deterministic linkage in case nrow is equal
+count_dates_bleeding <- D3_study_population_d[, .(count_a = .N), by = date_bleeding]
+count_dates_fes <- D3_dispensings_AA_s[, .(count_b = .N), by = data]
+count_merged <- merge.data.table(count_dates_bleeding, count_dates_fes, by.x = "date_bleeding", by.y = "data", all = TRUE)
+dates_dup_matched <- count_merged[count_a==count_b, date_bleeding]
+
+
+if(length(dates_dup_matched) > 0) {
+  
+  match_dup_dates <- D3_dispensings_AA_s[D3_study_population_d, on = .(data = date_bleeding), nomatch = 0L][data %in% dates_dup_matched]
+  match_dup_dates <- match_dup_dates[, quality_matching := "3° round"]
+  
+  # bind ids rows with 1°round matching and those with 2° round matching
+  match_df <- rbind(match_df[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)], match_dup_dates[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)])
+  
+  
+}
+
+# isolate records in both dataset that are still vacant
+D3_study_population_d2 <- D3_study_population_d[!date_bleeding %in% dates_dup_matched, ]
+D3_dispensings_AA_s2 <- D3_dispensings_AA_s[!data %in% dates_dup_matched, ]
+
+# allow a tolerance of 1 day and count again duplications per data/data+1
+D3_dispensings_AA_s2 <- D3_dispensings_AA_s2[, range_dates := paste0(data_min, "_", data_max)]
+D3_study_population_d2 <- D3_study_population_d2[, range_dates := paste0(date_bleeding, "_", date_bleeding+1)]
+count_range_dates_bleeding <- D3_study_population_d2[, .(count_a = .N), by = range_dates]
+count_range_dates_fes <- D3_dispensings_AA_s2[, .(count_b = .N), by = range_dates]
+count_range_merged <- merge.data.table(count_range_dates_bleeding, count_range_dates_fes, by = "range_dates", all = TRUE)
+range_dates_dup_matched <- count_range_merged[count_a==count_b, range_dates]
+
+if(length(range_dates_dup_matched) > 0) {
+  
+  match_range_dup_dates <- D3_dispensings_AA_s2[D3_study_population_d2, on = .(range_dates), nomatch = 0L][range_dates %in% range_dates_dup_matched]
+  match_range_dup_dates <- match_range_dup_dates[, quality_matching := "4° round"]
+  
+  # bind ids rows with 1°round matching and those with 2° round matching
+  match_df <- rbind(match_df[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)], match_range_dup_dates[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)])
+  
+}
+
+# create exposure variable
+match_df <- match_df[, is_exposed := fifelse(quality_matching %in% c("1° round", "2° round", "3° round", "4° round"), 1, 0)]
+
+
+# le righe ambigue che residuano le gestiamo con i dosaggi
+
+
+
 
 # 0) descriptive table general
 
-D3_dispensings_AA[, tag := NA]
-D3_dispensings_AA[!is.na(data), tag := duplicated(data)]
+bleeding_counts <- D3_study_population[!is.na(date_bleeding), .N, by = date_bleeding]
+setorder(bleeding_counts, N)
 
-D3_study_population[, tag := NA]
-D3_study_population[!is.na(date_bleeding), tag := duplicated(person_id, date_bleeding)]
+dispensing_counts <- D3_dispensings_AA[!is.na(data), .N, by = data]
+setorder(dispensing_counts, N)
 
 
 descriptive_table <- list(
   
-  "Number of rows of D3_study_population dataset (bleeding as unit)" = nrow(D3_study_population),
+  "Number of rows of D3_study_population dataset (narrow bleeding as unit)" = nrow(D3_study_population),
   "Number of rows of dispensing_AA dataset (dispensing day and hospital as unit)" = nrow(D3_dispensings_AA),
-  "Number of bleeding dates replicated in D3_study_population" = D3_study_population[, .N, by = tag],
+  "Number of bleeding dates in D3_study_population by n of duplication" = bleeding_counts[, .N, by = N],
+  "Number of rows of D3_study_population dataset with unique bleedings" = nrow(D3_study_population_u),
+  "Number of rows of the matched dataset after 1 round of matching (exact match)" = nrow(match_exact),
+  "Number of rows of the matched dataset after 2 round of matching (1 not included)" = nrow(match_2_round),
   "Number of unique dispensing dates" = D3_dispensings_AA[, uniqueN(data)],
-  "Number of dispensing dates replicated in D3_dispensings_AA" = D3_dispensings_AA[, .N, by = tag],
+  "Number of dispensing dates in D3_dispensings_AA by n of duplication" = dispensing_counts[, .N, by = N],
   "Number of rows of the matched dataset (inner join at 1 round and full join at 2 round)" = nrow(match_df)
   
 )
@@ -134,15 +207,13 @@ today <- format(Sys.Date(), "%Y%m%d")
 
 tab <- match_df[!is.na(event) & !duplicated(person_id)]
 
-tbl1 <- tab |> tbl_summary(by = event, include = is_exposed) |>
-       add_overall() |> 
+tbl1 <- tab |> tbl_summary(include = is_exposed) |>
        as_gt() |> 
        gt::gtsave(filename = file.path(thisdiroutput,paste0("tbl_all", today, ".docx")))
 
 tab_exposed <- tab[is_exposed==1 ,]
 
-tbl2 <- tab_exposed |> tbl_summary(by = event, include = c(is_1_match, is_2_match)) |>
-               add_overall() |> 
+tbl2 <- tab_exposed |> tbl_summary(include = quality_matching) |>
                as_gt() |> 
                gt::gtsave(filename = file.path(thisdiroutput,paste0("tbl_exposed", today, ".docx")))
 
@@ -164,3 +235,4 @@ saveRDS(descriptive_table, file = file.path(thisdiroutput,"descriptive_post_prob
 
 
 ## 2) matching keeping negative values for dispensings/vials ----
+
