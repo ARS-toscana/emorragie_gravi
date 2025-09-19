@@ -33,8 +33,45 @@ if (TEST){
 }
 
 # load data
+D3_dispensings_DOACs <- readRDS(file.path(thisdirinput, "D3_dispensings_DOACs.rds"))
 D3_dispensings_AA <- readRDS(file.path(thisdirinput, "D3_dispensings_AA.rds"))
 D3_study_population <- readRDS(file.path(thisdirinput, "D3_study_population.rds"))
+
+## 0) extract dosing of DOAcs ----
+
+# aic
+dose_20_rivarox <- c("038744189", "049224328", "049651058", "049674284")
+dose_15_rivarox <- c("038744138", "049224239", "049651045", "049674221")
+
+processing <- D3_dispensings_DOACs
+
+# keep only rivaroxaban 
+# processing <- D3_dispensings_DOACs[label==1 ,]
+
+# merge D3_dispensings_DOACs with D3_study_population by person_id
+processing <- processing[D3_study_population, on = "person_id"]
+
+# keep rows where date of DOAC <= date_bleeding
+processing <- processing[date <= date_bleeding, ]
+
+# keep the maximum date of DOAC per each person_id and date_bleeding
+processing <- processing[, .SD[date == max(date)], by = .(person_id, date_bleeding)]
+
+# categorize dosing based on aic
+processing <- processing[, `:=`(type_dose_15 = fifelse(AIC %in% dose_15_rivarox, "high", "other"),
+                                type_dose_15_20 = fifelse(AIC %in% c(dose_15_rivarox, dose_20_rivarox), "high", "other"))]
+
+tokeep <- c("person_id", "date_bleeding", "type_dose_15", "type_dose_15_20")
+
+processing <- processing[, ..tokeep]
+
+# add info on dosing in D3_study_population
+D3_study_population <- processing[D3_study_population, on = c("person_id", "date_bleeding")]
+
+D3_study_population <- D3_study_population[!duplicated(person_id) ,]
+
+D3_study_population[, `:=`(type_dose_15 = fifelse(type_dose_15 == "high", type_dose_15, "other"),
+                           type_dose_15_20 = fifelse(type_dose_15_20 == "high", type_dose_15_20, "other"))]
 
 
 ## 1) matching naive: rows with negative values for dispensings/vials removed ----
@@ -47,12 +84,17 @@ descriptive_fes_pre_management <- list(
 
 saveRDS(descriptive_fes_pre_management, file = file.path(thisdiroutput,"descriptive_fes_pre_management.rds"))
 
+# create id_bleeding
+D3_study_population <- D3_study_population[, id_bleeding:= 1:.N]
 
 # remove negative records
 D3_dispensings_AA <- D3_dispensings_AA[Nvialsday>0 & Ndispday>0]
 
 # keep only narrow bleedings
 D3_study_population <- D3_study_population[event=="bleeding_narrow" ,]
+
+# categorize dosing
+D3_dispensings_AA[, type_dose:= fifelse(Nvialsday==9, "high", "other")]
 
 # reshape dataset with bleedings with unique rows per date of bleeding
 counts <- D3_study_population[,.(N = .N), by = date_bleeding]
@@ -118,7 +160,7 @@ match_exact <- match_exact[, `:=`(quality_matching = "1° round")]
 match_2_round <- match_2_round[, `:=`(quality_matching = fifelse(!is.na(data) & !is.na(date_bleeding), "2° round", "No matching"))]
 
 # bind ids rows with 1°round matching and those with 2° round matching
-match_df <- rbind(match_exact[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)], match_2_round[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)])
+match_df <- rbind(match_exact[, .(person_id, event, quality_matching, type_dose, type_dose_15, type_dose_15_20, data, id_dispensing, id_bleeding, Nvialsday)], match_2_round[, .(person_id, event, type_dose, type_dose_15, type_dose_15_20, quality_matching, data, id_dispensing, id_bleeding, Nvialsday)])
 
 # create exposure variable
 match_df <- match_df[, is_exposed := fifelse(quality_matching %in% c("1° round", "2° round"), 1, 0)]
@@ -141,7 +183,7 @@ if(length(dates_dup_matched) > 0) {
   match_dup_dates <- match_dup_dates[, quality_matching := "3° round"]
   
   # bind ids rows with 1°round matching and those with 2° round matching
-  match_df <- rbind(match_df[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)], match_dup_dates[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)])
+  match_df <- rbind(match_df[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)], match_dup_dates[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)])
   
   
 }
@@ -164,16 +206,119 @@ if(length(range_dates_dup_matched) > 0) {
   match_range_dup_dates <- match_range_dup_dates[, quality_matching := "4° round"]
   
   # bind ids rows with 1°round matching and those with 2° round matching
-  match_df <- rbind(match_df[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)], match_range_dup_dates[, .(person_id, event, quality_matching, data, id_dispensing, Nvialsday)])
+  match_df <- rbind(match_df[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)], match_range_dup_dates[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)])
   
 }
 
 # create exposure variable
 match_df <- match_df[, is_exposed := fifelse(quality_matching %in% c("1° round", "2° round", "3° round", "4° round"), 1, 0)]
 
+# matching using dosing of DOACs and AA
 
-# le righe ambigue che residuano le gestiamo con i dosaggi
+# isolate dispensings in fes still not associated with any bleedings
+ids_dispensing_matched <- match_df[is_exposed==1, id_dispensing]
+D3_dispensings_AA_s <- D3_dispensings_AA[!id_dispensing %in% ids_dispensing_matched, ]
 
+# isolate bleedings still not associated with any dispensings
+ids_bleedings_matched <- match_df[is_exposed==1, id_bleeding]
+D3_study_population_s <- D3_study_population[!id_bleeding %in% ids_bleedings_matched, ]
+
+# filter only high dose
+D3_dispensings_AA_s <- D3_dispensings_AA_s[type_dose == "high" ,]
+D3_study_population_s <- D3_study_population_s[type_dose_15 == "high" ,]
+D3_study_population_sbis <- D3_study_population_s[type_dose_15_20 == "high" ,]
+
+# considering high dose of DOACs only 15 mg
+# match by date and type and dose and eventually handle bleedings with duplicated dates and dose: count nrows by date and dose in both dataset and proceed with a deterministic linkage in case nrow is equal
+
+count_dates_bleeding <- D3_study_population_s[, .(count_a = .N), by = .(date_bleeding, type_dose_15)]
+count_dates_fes <- D3_dispensings_AA_s[, .(count_b = .N), by = .(data, type_dose)]
+count_merged <- merge.data.table(count_dates_bleeding, count_dates_fes, by.x = "date_bleeding", by.y = "data", all = TRUE)
+dates_dup_matched <- count_merged[count_a==count_b, date_bleeding]
+
+
+if(length(dates_dup_matched) > 0) {
+  
+  match_dup_dates <- D3_dispensings_AA_s[D3_study_population_s, on = .(data = date_bleeding, type_dose = type_dose_15), nomatch = 0L][data %in% dates_dup_matched]
+  match_dup_dates <- match_dup_dates[, quality_matching := "5° round"]
+  
+  # bind ids rows with 1°round matching and those with 2° round matching
+  match_df <- rbind(match_df[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)], match_dup_dates[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)])
+  
+  
+}
+
+# add tolerance window of 1 day while matching by date and DOSE
+
+# isolate records in both dataset that are still vacant
+D3_study_population_s2 <- D3_study_population_s[!date_bleeding %in% dates_dup_matched, ]
+D3_dispensings_AA_s2 <- D3_dispensings_AA_s[!data %in% dates_dup_matched, ]
+
+# allow a tolerance of 1 day and count again duplications per data/data+1
+D3_dispensings_AA_s2 <- D3_dispensings_AA_s2[, range_dates := paste0(data_min, "_", data_max)]
+D3_study_population_s2 <- D3_study_population_s2[, range_dates := paste0(date_bleeding, "_", date_bleeding+1)]
+count_range_dates_bleeding <- D3_study_population_s2[, .(count_a = .N), by = range_dates]
+count_range_dates_fes <- D3_dispensings_AA_s2[, .(count_b = .N), by = range_dates]
+count_range_merged <- merge.data.table(count_range_dates_bleeding, count_range_dates_fes, by = "range_dates", all = TRUE)
+range_dates_dup_matched <- count_range_merged[count_a==count_b, range_dates]
+
+if(length(range_dates_dup_matched) > 0) {
+  
+  match_range_dup_dates <- D3_dispensings_AA_s2[D3_study_population_s2, on = .(range_dates), nomatch = 0L][range_dates %in% range_dates_dup_matched]
+  match_range_dup_dates <- match_range_dup_dates[, quality_matching := "6° round"]
+  
+  # bind ids rows with 1°round matching and those with 2° round matching
+  match_df <- rbind(match_df[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)], match_range_dup_dates[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)])
+  
+}
+
+# considering high dose of DOACs both 15 and 20 mg
+# match by date and type and dose and eventually handle bleedings with duplicated dates and dose: count nrows by date and dose in both dataset and proceed with a deterministic linkage in case nrow is equal
+
+count_dates_bleeding <- D3_study_population_sbis[, .(count_a = .N), by = .(date_bleeding, type_dose_15_20)]
+count_dates_fes <- D3_dispensings_AA_s[, .(count_b = .N), by = .(data, type_dose)]
+count_merged <- merge.data.table(count_dates_bleeding, count_dates_fes, by.x = "date_bleeding", by.y = "data", all = TRUE)
+dates_dup_matched <- count_merged[count_a==count_b, date_bleeding]
+
+
+if(length(dates_dup_matched) > 0) {
+  
+  match_dup_dates <- D3_dispensings_AA_s[D3_study_population_sbis, on = .(data = date_bleeding, type_dose = type_dose_15_20), nomatch = 0L][data %in% dates_dup_matched]
+  match_dup_dates <- match_dup_dates[, quality_matching := "5° round (b)"]
+  
+  # bind ids rows with 1°round matching and those with 2° round matching
+  match_df <- rbind(match_df[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)], match_dup_dates[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)])
+  
+  
+}
+
+# add tolerance window of 1 day while matching by date and DOSE
+
+# isolate records in both dataset that are still vacant
+D3_study_population_s2 <- D3_study_population_sbis[!date_bleeding %in% dates_dup_matched, ]
+D3_dispensings_AA_s2 <- D3_dispensings_AA_s[!data %in% dates_dup_matched, ]
+
+# allow a tolerance of 1 day and count again duplications per data/data+1
+D3_dispensings_AA_s2 <- D3_dispensings_AA_s2[, range_dates := paste0(data_min, "_", data_max)]
+D3_study_population_s2 <- D3_study_population_s2[, range_dates := paste0(date_bleeding, "_", date_bleeding+1)]
+count_range_dates_bleeding <- D3_study_population_s2[, .(count_a = .N), by = range_dates]
+count_range_dates_fes <- D3_dispensings_AA_s2[, .(count_b = .N), by = range_dates]
+count_range_merged <- merge.data.table(count_range_dates_bleeding, count_range_dates_fes, by = "range_dates", all = TRUE)
+range_dates_dup_matched <- count_range_merged[count_a==count_b, range_dates]
+
+if(length(range_dates_dup_matched) > 0) {
+  
+  match_range_dup_dates <- D3_dispensings_AA_s2[D3_study_population_s2, on = .(range_dates), nomatch = 0L][range_dates %in% range_dates_dup_matched]
+  match_range_dup_dates <- match_range_dup_dates[, quality_matching := "6° round (b)"]
+  
+  # bind ids rows with 1°round matching and those with 2° round matching
+  match_df <- rbind(match_df[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)], match_range_dup_dates[, .(person_id, id_bleeding, type_dose, type_dose_15, type_dose_15_20, event, quality_matching, data, id_dispensing, Nvialsday)])
+  
+}
+
+
+# create exposure variable
+match_df <- match_df[, is_exposed := fifelse(quality_matching %in% c("1° round", "2° round", "3° round", "4° round", "5° round", "6° round", "5° round (b)", "6° round (b)"), 1, 0)]
 
 
 
@@ -228,6 +373,12 @@ descriptive_table[["Dispensing in fes categorized per number of matches"]] = dis
 setorder(D3_dispensings_AA, Nvialsday)
 
 descriptive_table[["Distribution of Nvials per dispensing in fes"]] = D3_dispensings_AA[, .N, by = .(Nvialsday)]
+
+descriptive_table[["Distribution of categorized dose of AA in fes"]] = D3_dispensings_AA[, .N, by = .(type_dose)]
+
+descriptive_table[["Distribution of categorized dose of DOACs, considering high dose only 15 mg"]] = D3_study_population[, .N, by = .(type_dose_15)]
+
+descriptive_table[["Distribution of categorized dose of DOACs, considering high dose both 15 and 20 mg"]] = D3_study_population[, .N, by = .(type_dose_15_20)]
 
 # descriptive_table
 
