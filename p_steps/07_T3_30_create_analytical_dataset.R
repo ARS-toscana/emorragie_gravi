@@ -37,7 +37,14 @@ if (TEST){
 # import input datasets
 
 processing <- readRDS(file.path(thisdirinput, "D3_study_population.rds"))
+D3_study_population_with_prob_exp <- readRDS(file.path(thisdirinput, "D3_study_population_with_prob_exp.rds"))
 outcomes <- readRDS(file.path(thisdirinput, "D3_study_outcomes.rds"))
+
+tokeep <- c("person_id", "date_bleeding", "prob_exp")
+D3_study_population_with_prob_exp <- D3_study_population_with_prob_exp[, ..tokeep]
+
+# add info on individual probability of exposure
+processing <- D3_study_population_with_prob_exp[processing, on = .(person_id, date_bleeding)]
 
 
 # set names
@@ -118,7 +125,7 @@ processing[,episode_id := seq_len(.N)]
 
 tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH", "days_DEATH" ,"outcome_comp", paste0("covariate_",as.character(1:26)))
 
-tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH", "days_DEATH","outcome_comp")
+tokeep <- c("episode_id", "person_id", "gender", "ageband", "age", "date_bleeding", "type_bleeding", "prob_exp", "period", "number_previous_bleedings","outcome_AMI", "outcome_IS", "outcome_VTE", "outcome_TIA", "outcome_PE", "outcome_DIC", "outcome_THROM","outcome_DEATH", "days_DEATH","outcome_comp")
 
 
 processing <- processing[, ..tokeep]
