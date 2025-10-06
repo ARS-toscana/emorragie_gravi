@@ -29,7 +29,7 @@ if (TEST){
   dir.create(thisdiroutput, showWarnings = F)
 }else{
   thisdirinput <- dirtemp
-  thisdiroutput <- direxp
+  thisdiroutput <- dirtemp
 }
 
 # load data
