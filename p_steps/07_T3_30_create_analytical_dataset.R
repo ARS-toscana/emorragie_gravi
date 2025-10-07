@@ -151,11 +151,11 @@ assign(nameoutput, outputfile)
 # describe D4_analytical_dataset
 
 descriptive_table <- list(
-  
+
   "Distribution of type_bleeding" = table(D4_analytical_dataset$type_bleeding),
   "Distribution of exposure to AA" = table(D4_analytical_dataset$prob_exp),
   "Distribution of exposure to AA by type_bleeding" = table(D4_analytical_dataset$type_bleeding, D4_analytical_dataset$prob_exp)
-  
+
 )
 
 saveRDS(descriptive_table, file = file.path(thisdiroutput,"descriptive_D4_analytical_dataset.rds"))
