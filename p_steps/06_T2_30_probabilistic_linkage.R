@@ -68,8 +68,6 @@ processing <- processing[, ..tokeep]
 # add info on dosing in D3_study_population
 D3_study_population <- processing[D3_study_population, on = c("person_id", "date_bleeding")]
 
-D3_study_population <- D3_study_population[!duplicated(person_id) ,]
-
 D3_study_population[, `:=`(type_dose_15 = fifelse(type_dose_15 == "high", type_dose_15, "other"),
                            type_dose_15_20 = fifelse(type_dose_15_20 == "high", type_dose_15_20, "other"))]
 
