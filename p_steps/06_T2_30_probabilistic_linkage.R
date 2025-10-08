@@ -413,11 +413,11 @@ setorder(D3_dispensings_AA, Nvialsday)
 
 descriptive_table[["Distribution of Nvials per dispensing in fes"]] = D3_dispensings_AA[, .N, by = .(Nvialsday)]
 
-descriptive_table[["Distribution of categorized dose of AA in fes"]] = D3_dispensings_AA[, .N, by = .(type_dose)]
+# descriptive_table[["Distribution of categorized dose of AA in fes"]] = D3_dispensings_AA[, .N, by = .(type_dose)]
 
-descriptive_table[["Distribution of categorized dose of DOACs, considering high dose only 15 mg"]] = D3_study_population[, .N, by = .(type_dose_15)]
+# descriptive_table[["Distribution of categorized dose of DOACs, considering high dose only 15 mg"]] = D3_study_population[, .N, by = .(type_dose_15)]
 
-descriptive_table[["Distribution of categorized dose of DOACs, considering high dose both 15 and 20 mg"]] = D3_study_population[, .N, by = .(type_dose_15_20)]
+# descriptive_table[["Distribution of categorized dose of DOACs, considering high dose both 15 and 20 mg"]] = D3_study_population[, .N, by = .(type_dose_15_20)]
 
 # descriptive_table
 
