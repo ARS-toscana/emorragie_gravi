@@ -31,7 +31,7 @@ if (TEST){
   dir.create(thisdiroutput, showWarnings = F)
 }else{
   thisdirinput <- dirtemp
-  thisdiroutput <- direxp
+  thisdiroutput <- dirtemp
 }
 
 # import input datasets
@@ -144,19 +144,19 @@ outputfile <- processing
 nameoutput <- "D4_analytical_dataset"
 nameoutputext <- paste0(nameoutput,".rds")
 assign(nameoutput, outputfile)
-# saveRDS(outputfile, file = file.path(thisdiroutput, nameoutputext))
+saveRDS(outputfile, file = file.path(thisdiroutput, nameoutputext))
 
 #########################################
 
 # describe D4_analytical_dataset
 
-descriptive_table <- list(
-  
-  "Number of observation of D3_study_population_with_prob_exp" = nrow(D3_study_population_with_prob_exp),
-  "Distribution of type_bleeding" = table(D4_analytical_dataset$type_bleeding),
-  "Distribution of exposure to AA" = table(D4_analytical_dataset$prob_exp),
-  "Distribution of exposure to AA by type_bleeding" = table(D4_analytical_dataset$type_bleeding, D4_analytical_dataset$prob_exp)
-
-)
-
-saveRDS(descriptive_table, file = file.path(thisdiroutput,"descriptive_D4_analytical_dataset.rds"))
+# descriptive_table <- list(
+#   
+#   "Number of observation of D3_study_population_with_prob_exp" = nrow(D3_study_population_with_prob_exp),
+#   "Distribution of type_bleeding" = table(D4_analytical_dataset$type_bleeding),
+#   "Distribution of exposure to AA" = table(D4_analytical_dataset$prob_exp),
+#   "Distribution of exposure to AA by type_bleeding" = table(D4_analytical_dataset$type_bleeding, D4_analytical_dataset$prob_exp)
+# 
+# )
+# 
+# saveRDS(descriptive_table, file = file.path(thisdiroutput,"descriptive_D4_analytical_dataset.rds"))
