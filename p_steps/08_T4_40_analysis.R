@@ -48,6 +48,10 @@ input <- input %>%
                                                 (age > 89) ~ "90+"))
 
 input <- input %>% 
+           mutate(prob_exp_cat = ifelse(prob_exp==0, "Not exposed",
+                                 ifelse(prob_exp>=1, "Exposed", "Uncertain")))
+
+input <- input %>% 
            mutate(time = case_when(time==0 ~ 1,
                                    TRUE ~ as.numeric(time)))
 
@@ -300,6 +304,9 @@ input <- input %>%
 input <- input %>% 
            mutate(Eta_cat = relevel(factor(Eta_cat), "80-84"))
 
+input <- input %>% 
+            mutate(prob_exp_cat = relevel(factor(prob_exp_cat), "Not exposed"))
+
 
 outcomes <- c("outcome_DEATH", "outcome_THROM", "outcome_comp")
 
@@ -310,19 +317,22 @@ models_definitions <- function(data, outcome) {
   data <- data %>%
     mutate(period_3level = factor(period_3level))
   
-  f <- as.formula(paste(outcome, "~ period_3level + prob_exp + Eta_cat + gender"))
-  f_stag <- as.formula(paste(outcome, "~ period_3level + prob_exp + Eta_cat + gender + pbs(month, df = 4)"))
-  f_mix <- as.formula(paste(outcome, "~ period_3level + prob_exp + Eta_cat + gender + (1|person_id)"))
-  f_stag_mix <- as.formula(paste(outcome, "~ period_3level + prob_exp + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)"))
+  data <- data %>%
+    mutate(prob_exp_cat = factor(prob_exp_cat))
+  
+  f <- as.formula(paste(outcome, "~ period_3level + prob_exp_cat + Eta_cat + gender"))
+  f_stag <- as.formula(paste(outcome, "~ period_3level + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4)"))
+  f_mix <- as.formula(paste(outcome, "~ period_3level + prob_exp_cat + Eta_cat + gender + (1|person_id)"))
+  f_stag_mix <- as.formula(paste(outcome, "~ period_3level + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)"))
   
   # filtro i dati una sola volta
   data_narrow <- data %>% filter(type_bleeding == "narrow")
   
   list(
-    fit_periodo_narrow_mix = summary(glmer(f_mix, data = data_narrow, family = binomial)),
+    # fit_periodo_narrow_mix = summary(glmer(f_mix, data = data_narrow, family = binomial)),
     fit_periodo_narrow_log = summary(glm(f, data = data_narrow, family = binomial)),
     
-    fit_periodo_stag_narrow_mix = summary(glmer(f_stag_mix, data = data_narrow, family = binomial)),
+    # fit_periodo_stag_narrow_mix = summary(glmer(f_stag_mix, data = data_narrow, family = binomial)),
     fit_periodo_stag_narrow_log = summary(glm(f_stag, data = data_narrow, family = binomial))
   )
 }
@@ -348,19 +358,19 @@ models_definitions <- function(data, outcome) {
   data <- data %>%
     mutate(period = factor(period))
   
-  f <- as.formula(paste(outcome, "~ period + prob_exp + Eta_cat + gender"))
-  f_stag <- as.formula(paste(outcome, "~ period + prob_exp + Eta_cat + gender + pbs(month, df = 4)"))
-  f_mix <- as.formula(paste(outcome, "~ period + prob_exp + Eta_cat + gender + (1|person_id)"))
-  f_stag_mix <- as.formula(paste(outcome, "~ period + prob_exp + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)"))
+  f <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender"))
+  f_stag <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4)"))
+  f_mix <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + (1|person_id)"))
+  f_stag_mix <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)"))
   
   # filtro i dati una sola volta
   data_narrow <- data %>% filter(type_bleeding == "narrow")
   
   list(
-    fit_periodo_narrow_mix = summary(glmer(f_mix, data = data_narrow, family = binomial)),
+    # fit_periodo_narrow_mix = summary(glmer(f_mix, data = data_narrow, family = binomial)),
     fit_periodo_narrow_log = summary(glm(f, data = data_narrow, family = binomial)),
     
-    fit_periodo_stag_narrow_mix = summary(glmer(f_stag_mix, data = data_narrow, family = binomial)),
+    # fit_periodo_stag_narrow_mix = summary(glmer(f_stag_mix, data = data_narrow, family = binomial)),
     fit_periodo_stag_narrow_log = summary(glm(f_stag, data = data_narrow, family = binomial))
   )
 }
