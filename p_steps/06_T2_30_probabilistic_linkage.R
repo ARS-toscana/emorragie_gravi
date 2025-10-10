@@ -30,6 +30,7 @@ if (TEST){
 }else{
   thisdirinput <- dirtemp
   thisdiroutput <- dirtemp
+  thisdiroutput2 <- direxp
 }
 
 # load data
@@ -389,17 +390,17 @@ descriptive_table <- list(
 
 today <- format(Sys.Date(), "%Y%m%d")
 
-tab <- match_df[!is.na(event) & !duplicated(person_id)]
+tab <- match_df[!is.na(event)]
 
 tbl1 <- tab |> tbl_summary(include = is_exposed) |>
   as_gt() |> 
-  gt::gtsave(filename = file.path(thisdiroutput,paste0("tbl_all", today, ".docx")))
+  gt::gtsave(filename = file.path(thisdiroutput2,paste0("tbl_all", today, ".docx")))
 
 tab_exposed <- tab[is_exposed==1 ,]
 
 tbl2 <- tab_exposed |> tbl_summary(include = quality_matching) |>
   as_gt() |> 
-  gt::gtsave(filename = file.path(thisdiroutput,paste0("tbl_exposed", today, ".docx")))
+  gt::gtsave(filename = file.path(thisdiroutput2,paste0("tbl_exposed", today, ".docx")))
 
 # 2) descriptive table fes
 
@@ -421,7 +422,7 @@ descriptive_table[["Distribution of Nvials per dispensing in fes"]] = D3_dispens
 
 # descriptive_table
 
-saveRDS(descriptive_table, file = file.path(thisdiroutput,"descriptive_post_prob_linkage.rds"))
+saveRDS(descriptive_table, file = file.path(thisdiroutput2,"descriptive_post_prob_linkage.rds"))
 
 
 # save
