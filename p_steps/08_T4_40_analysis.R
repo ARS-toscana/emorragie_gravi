@@ -320,20 +320,21 @@ models_definitions <- function(data, outcome) {
   data <- data %>%
     mutate(prob_exp_cat = factor(prob_exp_cat))
   
-  f <- as.formula(paste(outcome, "~ period_3level + prob_exp_cat + Eta_cat + gender"))
-  f_stag <- as.formula(paste(outcome, "~ period_3level + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4)"))
-  f_mix <- as.formula(paste(outcome, "~ period_3level + prob_exp_cat + Eta_cat + gender + (1|person_id)"))
-  f_stag_mix <- as.formula(paste(outcome, "~ period_3level + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)"))
+  f <- as.formula(paste(outcome, "~ prob_exp_cat + Eta_cat + gender"))
+  f_trend <- as.formula(paste(outcome, "~ prob_exp_cat + Eta_cat + gender + time"))
+  f_trend_stag <- as.formula(paste(outcome, "~ prob_exp_cat + Eta_cat + gender + time + pbs(month, df = 4)"))
   
   # filtro i dati una sola volta
   data_narrow <- data %>% filter(type_bleeding == "narrow")
   
   list(
     # fit_periodo_narrow_mix = summary(glmer(f_mix, data = data_narrow, family = binomial)),
-    fit_periodo_narrow_log = summary(glm(f, data = data_narrow, family = binomial)),
+    fit_narrow_log = summary(glm(f, data = data_narrow, family = binomial)),
     
     # fit_periodo_stag_narrow_mix = summary(glmer(f_stag_mix, data = data_narrow, family = binomial)),
-    fit_periodo_stag_narrow_log = summary(glm(f_stag, data = data_narrow, family = binomial))
+    fit_narrow_log_trend = summary(glm(f_trend, data = data_narrow, family = binomial)),
+    
+    fit_narrow_log_trend_stag = summary(glm(f_trend_stag, data = data_narrow, family = binomial))
   )
 }
 
@@ -348,42 +349,42 @@ for (i in outcomes) {
 }
 
 # save
-save(model_results, file = file.path(thisdiroutput,"model_results_3_individual_3levels.rda"))
+save(model_results, file = file.path(thisdiroutput,"model_results_3_individual.rda"))
 
 
 ## B2) period with 5 levels----
 
-models_definitions <- function(data, outcome) {
-  
-  data <- data %>%
-    mutate(period = factor(period))
-  
-  f <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender"))
-  f_stag <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4)"))
-  f_mix <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + (1|person_id)"))
-  f_stag_mix <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)"))
-  
-  # filtro i dati una sola volta
-  data_narrow <- data %>% filter(type_bleeding == "narrow")
-  
-  list(
-    # fit_periodo_narrow_mix = summary(glmer(f_mix, data = data_narrow, family = binomial)),
-    fit_periodo_narrow_log = summary(glm(f, data = data_narrow, family = binomial)),
-    
-    # fit_periodo_stag_narrow_mix = summary(glmer(f_stag_mix, data = data_narrow, family = binomial)),
-    fit_periodo_stag_narrow_log = summary(glm(f_stag, data = data_narrow, family = binomial))
-  )
-}
-
-model_results <- list()
-
-for (i in outcomes) {
-  
-  model_results[[i]] <- models_definitions(input, i)
-  
-  
-}
-
-# save
-save(model_results, file = file.path(thisdiroutput,"model_results_4_individual_5levels.rda"))
+# models_definitions <- function(data, outcome) {
+#   
+#   data <- data %>%
+#     mutate(period = factor(period))
+#   
+#   f <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender"))
+#   f_stag <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4)"))
+#   f_mix <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + (1|person_id)"))
+#   f_stag_mix <- as.formula(paste(outcome, "~ period + prob_exp_cat + Eta_cat + gender + pbs(month, df = 4) + (1|person_id)"))
+#   
+#   # filtro i dati una sola volta
+#   data_narrow <- data %>% filter(type_bleeding == "narrow")
+#   
+#   list(
+#     # fit_periodo_narrow_mix = summary(glmer(f_mix, data = data_narrow, family = binomial)),
+#     fit_periodo_narrow_log = summary(glm(f, data = data_narrow, family = binomial)),
+#     
+#     # fit_periodo_stag_narrow_mix = summary(glmer(f_stag_mix, data = data_narrow, family = binomial)),
+#     fit_periodo_stag_narrow_log = summary(glm(f_stag, data = data_narrow, family = binomial))
+#   )
+# }
+# 
+# model_results <- list()
+# 
+# for (i in outcomes) {
+#   
+#   model_results[[i]] <- models_definitions(input, i)
+#   
+#   
+# }
+# 
+# # save
+# save(model_results, file = file.path(thisdiroutput,"model_results_4_individual_5levels.rda"))
 
