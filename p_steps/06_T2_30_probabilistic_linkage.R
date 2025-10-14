@@ -360,7 +360,7 @@ count_merged[, prob_exp:= fifelse((is.na(count_a) | is.na(count_b) ), 0,
 D3_study_population_with_prob_exp <- count_merged[D3_study_population, on = "date_bleeding"]
 
 D3_study_population_with_prob_exp[, prob_exp:=fifelse(is.na(prob_exp) & id_bleeding %in% ids_bleedings_matched, 1, prob_exp)]
-
+D3_study_population_with_prob_exp[, prob_exp2:=fifelse(id_bleeding %in% ids_bleedings_matched, 1, prob_exp)]
 
 # 0) descriptive table general
 
@@ -413,6 +413,10 @@ descriptive_table[["Dispensing in fes categorized per number of matches"]] = dis
 setorder(D3_dispensings_AA, Nvialsday)
 
 descriptive_table[["Distribution of Nvials per dispensing in fes"]] = D3_dispensings_AA[, .N, by = .(Nvialsday)]
+
+descriptive_table[["Distribution of probability of exposure - version 1"]] = table(D3_study_population_with_prob_exp$prob_exp)
+
+descriptive_table[["Distribution of probability of exposure - version 2"]] = table(D3_study_population_with_prob_exp$prob_exp2)
 
 # descriptive_table[["Distribution of categorized dose of AA in fes"]] = D3_dispensings_AA[, .N, by = .(type_dose)]
 
