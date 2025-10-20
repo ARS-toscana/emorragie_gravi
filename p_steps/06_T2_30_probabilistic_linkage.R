@@ -418,6 +418,8 @@ descriptive_table[["Distribution of probability of exposure - version 1"]] = tab
 
 descriptive_table[["Distribution of probability of exposure - version 2"]] = table(D3_study_population_with_prob_exp$prob_exp2)
 
+descriptive_table[["Unique id_bleedings in match_df"]] = match_df[, uniqueN(id_bleeding)]
+
 # descriptive_table[["Distribution of categorized dose of AA in fes"]] = D3_dispensings_AA[, .N, by = .(type_dose)]
 
 # descriptive_table[["Distribution of categorized dose of DOACs, considering high dose only 15 mg"]] = D3_study_population[, .N, by = .(type_dose_15)]
