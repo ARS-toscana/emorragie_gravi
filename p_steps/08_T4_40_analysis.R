@@ -58,6 +58,10 @@ input <- input %>%
 input <- input %>% 
            mutate(period_3level = ifelse(grepl("^1", period), "1", period))
 
+input <- input %>% 
+  mutate(outcome_comp = case_when((outcome_DEATH==1 | outcome_THROM==1) ~ 1,
+                                  TRUE ~ 0))
+
 fix_time <- data.frame(
              time = as.numeric(1:84)) %>% 
              mutate(year = cut(time, breaks = seq(1,96, by = 12), labels = c(2018:2024), right = FALSE),
@@ -89,9 +93,21 @@ den_broad <- input %>%
                    group_by(time) %>% 
                    summarise(n_emor_broad = n())
 
+
+# descriptive table
+descriptive_table <- list(
+
+  "Distribution of death events by exposure" = input[, .N, by = .(outcome_DEATH, prob_exp_cat)],
+  "Distribution of thrombosis events by exposure" = input[, .N, by = .(outcome_THROM, prob_exp_cat)],
+  "Distribution of composite events by exposure" = input[, .N, by = .(outcome_comp, prob_exp_cat)]
+
+)
+
+saveRDS(descriptive_table, file = file.path(thisdiroutput,"descriptive_events_D4_analytical_dataset.rds"))
+
 # creo un dataset dove l'unità è il tempo (mese)
 
-outcome_vars <- c("outcome_THROM", "outcome_DEATH")
+outcome_vars <- c("outcome_THROM", "outcome_DEATH","outcome_comp")
 
 results <- map(outcome_vars, function(var) {
   
@@ -349,7 +365,7 @@ for (i in outcomes) {
 }
 
 # save
-save(model_results, file = file.path(thisdiroutput,"model_results_3_individual.rda"))
+save(model_results, file = file.path(thisdiroutput,"model_results_3_individual_3levels.rda"))
 
 
 ## B2) period with 5 levels----
