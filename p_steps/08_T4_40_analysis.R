@@ -99,7 +99,8 @@ descriptive_table <- list(
 
   "Distribution of death events by exposure" = input[, .N, by = .(outcome_DEATH, prob_exp_cat)],
   "Distribution of thrombosis events by exposure" = input[, .N, by = .(outcome_THROM, prob_exp_cat)],
-  "Distribution of composite events by exposure" = input[, .N, by = .(outcome_comp, prob_exp_cat)]
+  "Distribution of composite events by exposure" = input[, .N, by = .(outcome_comp, prob_exp_cat)],
+  "Distribution of exposure by period" = input[, .N, by = .(period, prob_exp_cat)]
 
 )
 
@@ -323,6 +324,11 @@ input <- input %>%
 input <- input %>% 
             mutate(prob_exp_cat = relevel(factor(prob_exp_cat), "Not exposed"))
 
+input <- input %>% 
+           mutate(period_2level = ifelse(period=="Con antidoto con linee guida", "Post linee guida", "Pre linee guida"))
+
+input <- input %>% 
+          mutate(period_2level = relevel(factor(period_2level), "Pre linee guida"))
 
 outcomes <- c("outcome_DEATH", "outcome_THROM", "outcome_comp")
 
@@ -336,21 +342,58 @@ models_definitions <- function(data, outcome) {
   data <- data %>%
     mutate(prob_exp_cat = factor(prob_exp_cat))
   
+  data <- data %>%
+    mutate(period_2level = factor(period_2level))
+  
   f <- as.formula(paste(outcome, "~ prob_exp_cat + Eta_cat + gender"))
   f_trend <- as.formula(paste(outcome, "~ prob_exp_cat + Eta_cat + gender + time"))
   f_trend_stag <- as.formula(paste(outcome, "~ prob_exp_cat + Eta_cat + gender + time + pbs(month, df = 4)"))
   
+  f2 <- as.formula(paste(outcome, "~ period_2level + Eta_cat + gender"))
+  f2_trend <- as.formula(paste(outcome, "~ period_2level + Eta_cat + gender + time"))
+  f2_trend_stag <- as.formula(paste(outcome, "~ period_2level + Eta_cat + gender + time + pbs(month, df = 4)"))
+  
+  f3 <- as.formula(paste(outcome, "~ period_2level*prob_exp_cat + Eta_cat + gender"))
+  f3_trend <- as.formula(paste(outcome, "~ period_2level*prob_exp_cat + Eta_cat + gender + time"))
+  f3_trend_stag <- as.formula(paste(outcome, "~ period_2level*prob_exp_cat + Eta_cat + gender + time + pbs(month, df = 4)"))
+  
   # filtro i dati una sola volta
   data_narrow <- data %>% filter(type_bleeding == "narrow")
+  data_narrow_possible <- data %>% filter(type_bleeding == "narrow" & prob_exp_cat=="Uncertain")
+  data_narrow_probable <- data %>% filter(type_bleeding == "narrow" & prob_exp_cat=="Exposed")
+  data_narrow_exposed <- data %>% filter(type_bleeding == "narrow" & prob_exp_cat %in% c("Exposed", "Uncertain"))
   
   list(
-    # fit_periodo_narrow_mix = summary(glmer(f_mix, data = data_narrow, family = binomial)),
+
     fit_narrow_log = summary(glm(f, data = data_narrow, family = binomial)),
     
-    # fit_periodo_stag_narrow_mix = summary(glmer(f_stag_mix, data = data_narrow, family = binomial)),
     fit_narrow_log_trend = summary(glm(f_trend, data = data_narrow, family = binomial)),
     
-    fit_narrow_log_trend_stag = summary(glm(f_trend_stag, data = data_narrow, family = binomial))
+    fit_narrow_log_trend_stag = summary(glm(f_trend_stag, data = data_narrow, family = binomial)),
+    
+    fit_narrow_log_poss = summary(glm(f2, data = data_narrow_possible, family = binomial)),
+    
+    fit_narrow_log_poss_trend = summary(glm(f2_trend, data = data_narrow_possible, family = binomial)),
+    
+    fit_narrow_log_poss_stag_trend = summary(glm(f2_trend_stag, data = data_narrow_possible, family = binomial)),
+    
+    fit_narrow_log_prob = summary(glm(f2, data = data_narrow_probable, family = binomial)),
+
+    fit_narrow_log_prob_trend = summary(glm(f2_trend, data = data_narrow_probable, family = binomial)),
+
+    fit_narrow_log_prob_stag_trend = summary(glm(f2_trend_stag, data = data_narrow_probable, family = binomial)),
+    
+    fit_narrow_log_over = summary(glm(f2, data = data_narrow_exposed, family = binomial)),
+    
+    fit_narrow_log_over_trend = summary(glm(f2_trend, data = data_narrow_exposed, family = binomial)),
+    
+    fit_narrow_log_over_stag_trend = summary(glm(f2_trend_stag, data = data_narrow_exposed, family = binomial)),
+    
+    fit_narrow_log_interaction = summary(glm(f3, data = data_narrow_exposed, family = binomial)),
+    
+    fit_narrow_log_interaction_trend = summary(glm(f3_trend, data = data_narrow_exposed, family = binomial)),
+    
+    fit_narrow_log_interaction_stag_trend = summary(glm(f3_trend_stag, data = data_narrow_exposed, family = binomial))
   )
 }
 
