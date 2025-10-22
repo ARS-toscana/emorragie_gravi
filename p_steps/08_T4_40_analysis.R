@@ -100,7 +100,8 @@ descriptive_table <- list(
   "Distribution of death events by exposure" = input[, .N, by = .(outcome_DEATH, prob_exp_cat)],
   "Distribution of thrombosis events by exposure" = input[, .N, by = .(outcome_THROM, prob_exp_cat)],
   "Distribution of composite events by exposure" = input[, .N, by = .(outcome_comp, prob_exp_cat)],
-  "Distribution of exposure by period" = input[, .N, by = .(period, prob_exp_cat)]
+  "Distribution of exposure by period" = input[, .N, by = .(period, prob_exp_cat)],
+  "Distribution of outcome by period in exposed only" = input[prob_exp_cat!="Not exposed", .N, by = .(period, outcome_comp)]
 
 )
 
@@ -357,11 +358,35 @@ models_definitions <- function(data, outcome) {
   f3_trend <- as.formula(paste(outcome, "~ period_2level*prob_exp_cat + Eta_cat + gender + time"))
   f3_trend_stag <- as.formula(paste(outcome, "~ period_2level*prob_exp_cat + Eta_cat + gender + time + pbs(month, df = 4)"))
   
+  f4 <- as.formula(paste(outcome, "~ period_2level + prob_exp_cat + Eta_cat + gender"))
+  f4_trend <- as.formula(paste(outcome, "~ period_2level + prob_exp_cat + Eta_cat + gender + time"))
+  f4_trend_stag <- as.formula(paste(outcome, "~ period_2level + prob_exp_cat + Eta_cat + gender + time + pbs(month, df = 4)"))
+  
   # filtro i dati una sola volta
   data_narrow <- data %>% filter(type_bleeding == "narrow")
   data_narrow_possible <- data %>% filter(type_bleeding == "narrow" & prob_exp_cat=="Uncertain")
   data_narrow_probable <- data %>% filter(type_bleeding == "narrow" & prob_exp_cat=="Exposed")
   data_narrow_exposed <- data %>% filter(type_bleeding == "narrow" & prob_exp_cat %in% c("Exposed", "Uncertain"))
+  
+  # aggrego possible e probable
+  data_narrow <- data_narrow %>% 
+                     mutate(prob_exp_cat = ifelse(prob_exp_cat=="Not exposed", prob_exp_cat, "Exposed"))
+  
+  
+  mod_narrow_log_interaction = glm(f3, data = data_narrow, family = binomial)
+  
+  mod_narrow_log_interaction_trend = glm(f3_trend, data = data_narrow, family = binomial)
+  
+  mod_narrow_log_interaction_stag_trend = glm(f3_trend_stag, data = data_narrow, family = binomial)
+  
+  mod_narrow_log_no_interaction = glm(f4, data = data_narrow, family = binomial)
+  
+  mod_narrow_log_no_interaction_trend = glm(f4_trend, data = data_narrow, family = binomial)
+  
+  mod_narrow_log_no_interaction_stag_trend = glm(f4_trend_stag, data = data_narrow, family = binomial)
+
+  
+  
   
   list(
 
@@ -377,11 +402,11 @@ models_definitions <- function(data, outcome) {
     
     fit_narrow_log_poss_stag_trend = summary(glm(f2_trend_stag, data = data_narrow_possible, family = binomial)),
     
-    fit_narrow_log_prob = summary(glm(f2, data = data_narrow_probable, family = binomial)),
-
-    fit_narrow_log_prob_trend = summary(glm(f2_trend, data = data_narrow_probable, family = binomial)),
-
-    fit_narrow_log_prob_stag_trend = summary(glm(f2_trend_stag, data = data_narrow_probable, family = binomial)),
+    # fit_narrow_log_prob = summary(glm(f2, data = data_narrow_probable, family = binomial)),
+    # 
+    # fit_narrow_log_prob_trend = summary(glm(f2_trend, data = data_narrow_probable, family = binomial)),
+    # 
+    # fit_narrow_log_prob_stag_trend = summary(glm(f2_trend_stag, data = data_narrow_probable, family = binomial)),
     
     fit_narrow_log_over = summary(glm(f2, data = data_narrow_exposed, family = binomial)),
     
@@ -389,11 +414,24 @@ models_definitions <- function(data, outcome) {
     
     fit_narrow_log_over_stag_trend = summary(glm(f2_trend_stag, data = data_narrow_exposed, family = binomial)),
     
-    fit_narrow_log_interaction = summary(glm(f3, data = data_narrow_exposed, family = binomial)),
+    fit_narrow_log_interaction = summary(mod_narrow_log_interaction),
     
-    fit_narrow_log_interaction_trend = summary(glm(f3_trend, data = data_narrow_exposed, family = binomial)),
+    fit_narrow_log_interaction_trend = summary(mod_narrow_log_interaction_trend),
     
-    fit_narrow_log_interaction_stag_trend = summary(glm(f3_trend_stag, data = data_narrow_exposed, family = binomial))
+    fit_narrow_log_interaction_stag_trend = summary(mod_narrow_log_interaction_stag_trend),
+    
+    fit_narrow_log_no_interaction = summary(mod_narrow_log_no_interaction),
+    
+    fit_narrow_log_no_interaction_trend = summary(mod_narrow_log_no_interaction_trend),
+    
+    fit_narrow_log_no_interaction_stag_trend = summary(mod_narrow_log_no_interaction_stag_trend),
+    
+    LRT_noadj = anova(mod_narrow_log_no_interaction, mod_narrow_log_interaction, test = "LRT"),
+    
+    LRT_trend = anova(mod_narrow_log_no_interaction_trend, mod_narrow_log_interaction_trend, test = "LRT"),
+    
+    LRT_trend_stag = anova(mod_narrow_log_no_interaction_stag_trend, mod_narrow_log_interaction_stag_trend, test = "LRT")
+    
   )
 }
 
@@ -406,6 +444,8 @@ for (i in outcomes) {
   
   
 }
+
+
 
 # save
 save(model_results, file = file.path(thisdiroutput,"model_results_3_individual_3levels.rda"))
