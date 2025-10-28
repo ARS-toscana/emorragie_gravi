@@ -372,18 +372,21 @@ models_definitions <- function(data, outcome) {
   data_narrow <- data_narrow %>% 
                      mutate(prob_exp_cat = ifelse(prob_exp_cat=="Not exposed", prob_exp_cat, "Exposed"))
   
+  # restringo a periodo in cui ho sia esposti che non esposti
+  data_narrow_r <- data_narrow %>% filter(period_3level!="Senza antidoto")
   
-  mod_narrow_log_interaction = glm(f3, data = data_narrow, family = binomial)
   
-  mod_narrow_log_interaction_trend = glm(f3_trend, data = data_narrow, family = binomial)
+  mod_narrow_log_interaction = glm(f3, data = data_narrow_r, family = binomial)
   
-  mod_narrow_log_interaction_stag_trend = glm(f3_trend_stag, data = data_narrow, family = binomial)
+  mod_narrow_log_interaction_trend = glm(f3_trend, data = data_narrow_r, family = binomial)
   
-  mod_narrow_log_no_interaction = glm(f4, data = data_narrow, family = binomial)
+  mod_narrow_log_interaction_stag_trend = glm(f3_trend_stag, data = data_narrow_r, family = binomial)
   
-  mod_narrow_log_no_interaction_trend = glm(f4_trend, data = data_narrow, family = binomial)
+  mod_narrow_log_no_interaction = glm(f4, data = data_narrow_r, family = binomial)
   
-  mod_narrow_log_no_interaction_stag_trend = glm(f4_trend_stag, data = data_narrow, family = binomial)
+  mod_narrow_log_no_interaction_trend = glm(f4_trend, data = data_narrow_r, family = binomial)
+  
+  mod_narrow_log_no_interaction_stag_trend = glm(f4_trend_stag, data = data_narrow_r, family = binomial)
 
   
   
