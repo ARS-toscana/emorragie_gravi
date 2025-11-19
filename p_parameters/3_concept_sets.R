@@ -3,7 +3,47 @@
 ###################################################################
 concept_sets_of_our_study_drugs <- c("Apixaban","Rivaroxaban","OtherDOACs", "ANTIAGGR", "NSAIDS", "INHIBVITK", "DOAC", "GASTRO", "STATINS", "ANTIDEPR", "HEPARIN", "ANTICANCER", "ANTIHYPERTEN", "ANTIDIAB")
 
-concept_sets_of_our_study_diagnosis <- c("bleeding_narrow","IS","AMI","TIA","VTE","PE","DIC","FAT", "VE", "HF", "STROKE", "RENIMP", "HEPIMP", "DIAB","DEMENTIA")
+concept_sets_of_our_study_diagnosis <- c("bleeding_narrow","IS","AMI","TIA","VTE","PE","DIC","FAT", "VE", "HF", "STROKE", "RENIMP", "HEPIMP", "DIAB","DEMENTIA","CANCER")
+
+
+# names of the concept sets
+
+name_codelist <- list()
+
+name_codelist[["Apixaban"]] = "Apixaban"
+name_codelist[["Rivaroxaban"]] = "Rivaroxaban"
+name_codelist[["OtherDOACs"]] = "Altri NAO"
+name_codelist[["ANTIAGGR"]] = "Antiaggreganti piastrinici"
+name_codelist[["NSAIDS"]] = "Antinfiammatori non steroidei"
+name_codelist[["INHIBVITK"]] = "Inibitori della vitamina K"
+name_codelist[["DOAC"]] = "NAO" 
+name_codelist[["GASTRO"]] = "Inibitori della secrezione gastrica"
+name_codelist[["STATINS"]] = "Statine"
+name_codelist[["ANTIDEPR"]] = "Antidepressivi"
+name_codelist[["HEPARIN"]] = "Eparina"
+name_codelist[["ANTICANCER"]] = "Antitumorali"
+name_codelist[["ANTIHYPERTEN"]] = "Antiipertensivi"
+name_codelist[["ANTIDIAB"]] = "Antidiabetici"
+
+name_codelist[["bleeding_narrow"]] = "Emorraggia narrow"
+name_codelist[["IS"]] = "Ictus ischemico"
+name_codelist[["AMI"]] = "Infarto del miocardio"
+name_codelist[["VTE"]] = "Trombosi venosa profonda"
+name_codelist[["TIA"]] = "Attacco ischemico transitorio"
+name_codelist[["PE"]] = "Embolia polmonare"
+name_codelist[["DIC"]] = "Coagulazione intravascolare disseminata"
+name_codelist[["FAT"]] = "Fibrillazione atriale e flatter atriale"
+name_codelist[["VE"]] = "Tromboembolismo venoso"
+name_codelist[["HF"]] = "Scompenso cardiaco"
+name_codelist[["STROKE"]] = "Ictus ischemico o emorragico"
+name_codelist[["RENIMP"]] = "Insufficienza renale cronica"
+name_codelist[["HEPIMP"]] = "Insufficienza epatica"
+name_codelist[["DIAB"]] = "Diabete di tipo 1 o 2" 
+name_codelist[["CANCER1"]] = "Tumore (lista 1)" 
+name_codelist[["CANCER2"]] =  "Tumore (lista 2)" 
+name_codelist[["CANCER3"]] <-  "Tumore (lista 3)"
+name_codelist[["CANCER"]] <- "Tumore"
+name_codelist[["DEMENTIA"]] = "Demenza"
 
 # -concept_set_domains- is a 2-level list encoding for each concept set the corresponding data domain
 
@@ -13,7 +53,7 @@ for (concept_id in concept_sets_of_our_study_drugs) {
   concept_set_domains[[concept_id]] = "Medicines"
 }
 
-for (concept_id in concept_sets_of_our_study_drugs) {
+for (concept_id in concept_sets_of_our_study_diagnosis) {
   concept_set_domains[[concept_id]]="Diagnosis"
 }
 
